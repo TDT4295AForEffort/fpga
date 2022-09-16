@@ -1,0 +1,6 @@
+# Not sure about these yet
+*.cache/
+*.runs/
+*.srcs/utils_1/
+*.xpr/
+*.hw/
