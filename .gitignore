@@ -4,3 +4,6 @@
 *.srcs/utils_1/
 *.xpr/
 *.hw/
+*.sim/
+
+.idea/
