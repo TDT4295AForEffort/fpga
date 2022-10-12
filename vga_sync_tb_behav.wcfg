@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="vga_sync_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="vga_sync_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="83.644756 us"></ZoomEndTime>
+      <Cursor1Time time="0.990000 us"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="276"></NameColumnWidth>
+      <ValueColumnWidth column_width="96"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="24" />
+   <wvobject type="logic" fp_name="/vga_sync_tb/clk100">
+      <obj_property name="ElementShortName">clk100</obj_property>
+      <obj_property name="ObjectShortName">clk100</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/clk100_4state">
+      <obj_property name="ElementShortName">clk100_4state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">clk100_4state[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/hsync">
+      <obj_property name="ElementShortName">hsync</obj_property>
+      <obj_property name="ObjectShortName">hsync</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/vsync">
+      <obj_property name="ElementShortName">vsync</obj_property>
+      <obj_property name="ObjectShortName">vsync</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/video_on">
+      <obj_property name="ElementShortName">video_on</obj_property>
+      <obj_property name="ObjectShortName">video_on</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/p_tick">
+      <obj_property name="ElementShortName">p_tick</obj_property>
+      <obj_property name="ObjectShortName">p_tick</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/x">
+      <obj_property name="ElementShortName">x[9:0]</obj_property>
+      <obj_property name="ObjectShortName">x[9:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/y">
+      <obj_property name="ElementShortName">y[9:0]</obj_property>
+      <obj_property name="ObjectShortName">y[9:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/cur_pix">
+      <obj_property name="ElementShortName">cur_pix[19:0]</obj_property>
+      <obj_property name="ObjectShortName">cur_pix[19:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/next_pix">
+      <obj_property name="ElementShortName">next_pix[19:0]</obj_property>
+      <obj_property name="ObjectShortName">next_pix[19:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/xyaddr">
+      <obj_property name="ElementShortName">xyaddr</obj_property>
+      <obj_property name="ObjectShortName">xyaddr</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/hsync2">
+      <obj_property name="ElementShortName">hsync2</obj_property>
+      <obj_property name="ObjectShortName">hsync2</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/vsync2">
+      <obj_property name="ElementShortName">vsync2</obj_property>
+      <obj_property name="ObjectShortName">vsync2</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/video_on2">
+      <obj_property name="ElementShortName">video_on2</obj_property>
+      <obj_property name="ObjectShortName">video_on2</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/x2">
+      <obj_property name="ElementShortName">x2[9:0]</obj_property>
+      <obj_property name="ObjectShortName">x2[9:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/vga2/hpos">
+      <obj_property name="ElementShortName">hpos[9:0]</obj_property>
+      <obj_property name="ObjectShortName">hpos[9:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/y2">
+      <obj_property name="ElementShortName">y2[9:0]</obj_property>
+      <obj_property name="ObjectShortName">y2[9:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/vga2/vpos">
+      <obj_property name="ElementShortName">vpos[9:0]</obj_property>
+      <obj_property name="ObjectShortName">vpos[9:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/hsynccomp">
+      <obj_property name="ElementShortName">hsynccomp</obj_property>
+      <obj_property name="ObjectShortName">hsynccomp</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/vsynccomp">
+      <obj_property name="ElementShortName">vsynccomp</obj_property>
+      <obj_property name="ObjectShortName">vsynccomp</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/vga_sync_tb/vidoncomp">
+      <obj_property name="ElementShortName">vidoncomp</obj_property>
+      <obj_property name="ObjectShortName">vidoncomp</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/PERIOD">
+      <obj_property name="ElementShortName">PERIOD[31:0]</obj_property>
+      <obj_property name="ObjectShortName">PERIOD[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/HPERIOD">
+      <obj_property name="ElementShortName">HPERIOD[31:0]</obj_property>
+      <obj_property name="ObjectShortName">HPERIOD[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/vga_sync_tb/hperiod">
+      <obj_property name="ElementShortName">hperiod[31:0]</obj_property>
+      <obj_property name="ObjectShortName">hperiod[31:0]</obj_property>
+   </wvobject>
+</wave_config>

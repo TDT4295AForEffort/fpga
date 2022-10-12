@@ -19,83 +19,87 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+// top level access to pins, composition of parts, for TDT4295 2022 group A, raycasting
+// this file should mostly just be wires, to connect overarching parts together,
+// like pins to spi, spi to raycast, raycast to framebuf, framebuf to vga, vga to pins,
+// maybe spi to ram.
 
+// feel free to copy this file with a new name, set that as top in your local project,
+// and mess with it for demos, or just mess with it as a branch or local-only demo,
+// but git repo version of this file is for stuff mostly compatible with final product
 module toplevel
 	(
 		input wire clk,
 		input wire [2:0] sw,
 		output wire hsync, vsync,
-		output wire [3:0] r,
-		output wire [3:0] g,
-		output wire [3:0] b
+		output wire [3:0] vga_out_red,
+		output wire [3:0] vga_out_green,
+		output wire [3:0] vga_out_blue
 	);
+	// possible universal reset signal for future
 	wire reset;
+	// 100mhz clock, bc things are written with this assumption and it should be explicit
 	wire clk100;
+	// currently master clock is 100mhz.
 	assign clk100 = clk;
 	
-	// channel toggle todo remove
-	reg [2:0] rgb_reg = 0;
-    always @(posedge clk100)
-        rgb_reg <= sw;
-        
-    // state register for 4 state operations in sync
+    // state register for 4-state operations in sync with 25MHz VGA out
 	reg [1:0] clk100_4state = 0;
-	
 	always @(posedge(clk100))
 	   clk100_4state = clk100_4state + 1;
 	
 	
-	// vga_sync setup
+	// vga out synchronization and indexing logic
 	wire video_on;
-    wire [9:0] x;
-    wire [9:0] y;
-    wire [19:0] cur_pix, next_pix;
-    
-    // instantiate vga_sync
-    vga_sync vga_sync_unit (.clk100(clk100), .clk100_4state(clk100_4state),
-                            .hsync(hsync), .vsync(vsync),
-                            .video_on(video_on), .p_tick(), .x(x), .y(y), 
-                            .cur_pix(cur_pix), .next_pix(next_pix));
+    wire [9:0] pixread_x;
+    wire [9:0] y;    
+    wire vgasync_reset = 0;
+    vga_sync2 vgasync2 (vgasync_reset, clk100, clk100_4state,
+        hsync, vsync, video_on,
+        pixread_x, y);
+        
+    // wires for writing pixels to framebuffer.
+    wire [15:0] pixwrite_data;
+    wire [9:0] pixwrite_x, pixwrite_y;
+    // frame buffer write test
+    ramfiller ramfill(clk100, clk100_4state, pixwrite_x, pixwrite_y, pixwrite_data); 
 
 
-//    always @(posedge clk100)
-//    begin
-//        if (reset) time_reg <= 0;
-//        else if (y == 1 & x==1) time_reg <= time_reg + 1;
-//        else time_reg <= time_reg;
-//    end
-
-    // output
-    wire [3:0] red;
-    wire [3:0] green;
-    wire [3:0] blue;
-    wire [15:0] pixel;
-    wire [15:0] gen_pixel;
-    reg [15:0] pixelreg = 0;
+    // ram controller to output pixel wires
+    reg [15:0] pixel = 0;
+    wire [15:0] pixelread;
     wire pixel_read_valid;
-    
-    assign red =   (rgb_reg[0]) ? (next_pix[3:0]) : 4'b0;
-    assign green = (rgb_reg[1]) ? (next_pix[7:4]) : 4'b0;
-    assign blue =  (rgb_reg[2]) ? (next_pix[11:8]) : 4'b0;
-    assign gen_pixel[3:0] = red;
-    assign gen_pixel[7:4] = green;
-    assign gen_pixel[11:8] = blue;
-    assign gen_pixel[15:12] = 0;
-    assign r = video_on ? pixelreg[3:0] : 0;
-    assign g = video_on ? pixelreg[7:4] : 0;
-    assign b = video_on ? pixelreg[11:8] : 0;
+    always @(posedge clk) begin
+        if (pixel_read_valid) pixel = pixelread;
+    end
 
-    always @(posedge clk100) begin
-        pixelreg = pixel_read_valid ? pixel : pixelreg;
-    end 
+    // vga output colors
+    // currently outs are 4bit, final product will be 5-6-5 hopefully
+    // here i take lower bits bc of the demo i want to run,
+    // todo @sindre your downsamplings should probably do highest bits to lose detail instead.
+    assign vga_out_red = video_on ? pixel[3:0] : 0;
+    assign vga_out_green = video_on ? pixel[8:5] : 0;
+    assign vga_out_blue = video_on ? pixel[14:11] : 0;
+
+    // connections from ram controller to ram
     wire [19:0] ram_addr;
     wire [15:0] ram_data_out;
     wire [15:0] ram_data_in;
     wire ram_write;
-    sram_controller sram_controller(.clk100(clk100), .sram_addr(ram_addr), .sram_data_in(ram_data_in), .sram_data_out(ram_data_out), .sram_write(ram_write), 
-                                    .portA_addr(cur_pix), .portA_data(pixel), .portA_valid(pixel_read_valid),
-                                    .portB_addr(next_pix), .portB_data(gen_pixel)
+    
+    // controller for accessing ram
+    // todo pixel write is currently always-on,
+    // feel free to assign a wire to pixwrite_enable and connect it to your raycaster or whatever,
+    // if you end up having dead time where you wait for frame end or smth.
+    sram_controller sram_controller(.clk100(clk100), .clk100_4state(clk100_4state), 
+                                    .sram_addr(ram_addr), .sram_data_in(ram_data_in), .sram_data_out(ram_data_out), .sram_write(ram_write), 
+                                    .pixread_x(pixread_x), .pixread_y(y), .pixread_data(pixelread), .pixread_valid(pixel_read_valid),
+                                    .pixwrite_x(pixwrite_x), .pixwrite_y(pixwrite_y), .pixwrite_data(pixwrite_data), .pixwrite_enable(1)
                                     );
-    bram ram(.clk(clk100), .addr(ram_addr), .dout(ram_data_out), .di(ram_data_in), .we(ram_write));
+
+    // stand-in for sram, block ram ip module, with one port set to 16bit rw access, 320*240 = 76800 depth
+    // results in 2 cycle delay
+    // todo implement external sram access
+    blk_mem_gen_0 ram(.clka(clk100), .addra(ram_addr[16:0]), .douta(ram_data_out), .dina(ram_data_in), .wea(ram_write));
 
 endmodule : toplevel
