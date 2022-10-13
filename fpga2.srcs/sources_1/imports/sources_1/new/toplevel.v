@@ -29,19 +29,19 @@
 // but git repo version of this file is for stuff mostly compatible with final product
 module toplevel
 	(
-		input wire clk,
-		input wire [2:0] sw,
-		output wire hsync, vsync,
-		output wire [3:0] vga_out_red,
-		output wire [3:0] vga_out_green,
-		output wire [3:0] vga_out_blue
+		input wire hw_clk,
+		input wire [2:0] hw_sw,
+		output wire hw_hsync, hw_vsync,
+		output wire [3:0] hw_vga_out_red,
+		output wire [3:0] hw_vga_out_green,
+		output wire [3:0] hw_vga_out_blue
 	);
 	// possible universal reset signal for future
 	wire reset;
 	// 100mhz clock, bc things are written with this assumption and it should be explicit
 	wire clk100;
 	// currently master clock is 100mhz.
-	assign clk100 = clk;
+	assign clk100 = hw_clk;
 	
     // state register for 4-state operations in sync with 25MHz VGA out
 	reg [1:0] clk100_4state = 0;
@@ -55,7 +55,7 @@ module toplevel
     wire [9:0] y;    
     wire vgasync_reset = 0;
     vga_sync2 vgasync2 (vgasync_reset, clk100, clk100_4state,
-        hsync, vsync, video_on,
+        hw_hsync, hw_vsync, video_on,
         pixread_x, y);
         
     // wires for writing pixels to framebuffer.
@@ -69,7 +69,7 @@ module toplevel
     reg [15:0] pixel = 0;
     wire [15:0] pixelread;
     wire pixel_read_valid;
-    always @(posedge clk) begin
+    always @(posedge clk100) begin
         if (pixel_read_valid) pixel = pixelread;
     end
 
@@ -77,9 +77,9 @@ module toplevel
     // currently outs are 4bit, final product will be 5-6-5 hopefully
     // here i take lower bits bc of the demo i want to run,
     // todo @sindre your downsamplings should probably do highest bits to lose detail instead.
-    assign vga_out_red = video_on ? pixel[3:0] : 0;
-    assign vga_out_green = video_on ? pixel[8:5] : 0;
-    assign vga_out_blue = video_on ? pixel[14:11] : 0;
+    assign hw_vga_out_red = video_on ? pixel[3:0] : 0;
+    assign hw_vga_out_green = video_on ? pixel[8:5] : 0;
+    assign hw_vga_out_blue = video_on ? pixel[14:11] : 0;
 
     // connections from ram controller to ram
     wire [19:0] ram_addr;
