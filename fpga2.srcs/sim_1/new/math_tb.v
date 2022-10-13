@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 10/04/2022 02:33:51 PM
+// Create Date: 10/13/2022 04:18:42 PM
 // Design Name: 
-// Module Name: toplevel_tb
+// Module Name: math_tb
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,36 +20,30 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module toplevel_tb(
+module math_tb(
 
     );
-    
-    
     reg clk100 = 0;
-    reg [2:0] sw = 0'b101;
-    wire hsync, vsync;
-    wire [3:0] r;
-    wire [3:0] g;
-    wire [3:0] b;
-    toplevel top
-	(
-		.hw_clk(clk100),
-		.hw_sw(sw),
-		.hw_hsync(hsync), .vsync(vsync),
-		.hw_vga_out_red(r),
-		.hw_vga_out_green(g),
-		.hw_vga_out_blue(b)
-	);
-	
     parameter PERIOD = 10;
     parameter HPERIOD = PERIOD/2;
     localparam hperiod = 5;
-    initial begin
-        repeat(10000000) begin
-            clk100 <= ~clk100;
-            $display(r);
-            #HPERIOD;
-        end     
+    reg [31:0] ar = 0'h0001_0000;
+    reg [31:0] br = 0'h0001_0001;
+    reg [31:0] cr = 0;
+
+    wire [31:0] a = ar;
+    wire [31:0] b = br;
+    wire [31:0] c;
+    
+    always @(posedge clk100) begin
+        cr = c;
+        ar = ar + 32;
     end
-	
+    mult_fixedfull c_ab_mult(a,b,c);
+    initial begin
+        repeat(10000) begin
+            clk100 <= ~clk100;
+            #HPERIOD;
+        end
+    end
 endmodule
