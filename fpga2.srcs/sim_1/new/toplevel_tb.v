@@ -35,7 +35,7 @@ module toplevel_tb(
 	(
 		.hw_clk(clk100),
 		.hw_sw(sw),
-		.hw_hsync(hsync), .vsync(vsync),
+		.hw_hsync(hsync), .hw_vsync(vsync),
 		.hw_vga_out_red(r),
 		.hw_vga_out_green(g),
 		.hw_vga_out_blue(b)

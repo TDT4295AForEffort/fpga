@@ -62,7 +62,7 @@ module toplevel
     wire [15:0] pixwrite_data;
     wire [9:0] pixwrite_x, pixwrite_y;
     // frame buffer write test
-    ramfiller ramfill(clk100, clk100_4state, pixwrite_x, pixwrite_y, pixwrite_data); 
+    ray_caster rays(clk100, clk100_4state, pixwrite_x, pixwrite_y, pixwrite_data); 
 
 
     // ram controller to output pixel wires
