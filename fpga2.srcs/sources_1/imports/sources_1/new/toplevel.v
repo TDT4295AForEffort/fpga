@@ -75,11 +75,9 @@ module toplevel
 
     // vga output colors
     // currently outs are 4bit, final product will be 5-6-5 hopefully
-    // here i take lower bits bc of the demo i want to run,
-    // todo @sindre your downsamplings should probably do highest bits to lose detail instead.
-    assign hw_vga_out_red = video_on ? pixel[3:0] : 0;
-    assign hw_vga_out_green = video_on ? pixel[8:5] : 0;
-    assign hw_vga_out_blue = video_on ? pixel[14:11] : 0;
+    assign hw_vga_out_red = video_on ? pixel[4:1] : 0;
+    assign hw_vga_out_green = video_on ? pixel[10:7] : 0;
+    assign hw_vga_out_blue = video_on ? pixel[15:12] : 0;
 
     // connections from ram controller to ram
     wire [19:0] ram_addr;
