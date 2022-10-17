@@ -8,3 +8,7 @@
 *.ip_user_files/
 *.gen/
 .idea/
+/vivado.jou
+/vivado.log
+toplevel_tb_behav.wcfg
+fpga2.xpr
