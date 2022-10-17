@@ -387,9 +387,9 @@ module ray_caster(
             // loop for y for x, to prove a point, because vga output is x then y
             // count y up to 240, then reset to 0.
             // count x when y loops, up to 320, then reset to 0.
-            if (ypos+1 >= 240) begin
+            if (ypos+1 >= 480) begin
                 ypos = 0;
-                if (xpos+1 >= 320) begin
+                if (xpos+1 >= 640) begin
                     xpos = 0;
                 end else begin
                     xpos = xpos + 1;
@@ -397,10 +397,10 @@ module ray_caster(
             end else begin
 
                 // Code
-                column = xpos;
+                column = {1'b0,xpos[9:1]};
                 debug1 = 120 + bar_border_from_center[column];
                 debug2 = 120 - bar_border_from_center[column];
-                if( (ypos > (120 + bar_border_from_center[column])) || (ypos < (120 - bar_border_from_center[column])) ) begin
+                if( (ypos > (240 + 2*bar_border_from_center[column])) || (ypos < (240 - 2*bar_border_from_center[column])) ) begin
                     data_reg = 16'hFFFF;
                 end else begin 
                     data_reg = {5'b00111, 6'b0, input_ray[column][15:11]};
