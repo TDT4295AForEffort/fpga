@@ -42,8 +42,11 @@ module ramfiller(
     assign data[10:5] = ypos[5:0];
     // blue (5bit) is the high bits of x + y, so loops slow.
     // losing the lowest y bit to keep it from double-carrying to overflow at all-ones both?
-    assign data[15:11] = xpos[9:5] + ypos[9:6];
-    
+//    assign data[15:11] = xpos[9:5] + ypos[9:6];
+    wire [31:0] c;
+    assign data[15:11] = c[20:16];
+    mulq18_14 bmulter({2, 16'b0}, {6'b0, xpos, 16'b0}, c);
+
     always @(posedge clk100) begin
         // make one pixel per 4 cycles, because that's how often you can write to a single slot.
         if (fourstate == 0) begin

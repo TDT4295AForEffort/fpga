@@ -4,22 +4,22 @@
    </wave_state>
    <db_ref_list>
       <db_ref path="math_tb_behav.wdb" id="1">
-         <top_modules>
+         <top_modules>a
             <top_module name="glbl" />
             <top_module name="math_tb" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,319,994 ps"></ZoomStartTime>
-      <ZoomEndTime time="1,320,002 ps"></ZoomEndTime>
-      <Cursor1Time time="1,320,000 ps"></Cursor1Time>
+      <ZoomStartTime time="0.000000000 ms"></ZoomStartTime>
+      <ZoomEndTime time="20.000000001 ms"></ZoomEndTime>
+      <Cursor1Time time="3.887970000 ms"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="326"></NameColumnWidth>
-      <ValueColumnWidth column_width="159"></ValueColumnWidth>
+      <NameColumnWidth column_width="223"></NameColumnWidth>
+      <ValueColumnWidth column_width="169"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="14" />
+   <WVObjectSize size="15" />
    <wvobject type="logic" fp_name="/math_tb/clk100">
       <obj_property name="ElementShortName">clk100</obj_property>
       <obj_property name="ObjectShortName">clk100</obj_property>
@@ -53,7 +53,7 @@
       <obj_property name="ObjectShortName">a[31:0]</obj_property>
       <obj_property name="Radix">REALRADIX</obj_property>
       <obj_property name="radix_realType">SIGNEDFIXEDPOINTRADIX</obj_property>
-      <obj_property name="radix_fractionWidth">16</obj_property>
+      <obj_property name="radix_fractionWidth">14</obj_property>
       <obj_property name="radix_otherWidth">0</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/math_tb/b">
@@ -61,7 +61,7 @@
       <obj_property name="ObjectShortName">b[31:0]</obj_property>
       <obj_property name="Radix">REALRADIX</obj_property>
       <obj_property name="radix_realType">SIGNEDFIXEDPOINTRADIX</obj_property>
-      <obj_property name="radix_fractionWidth">16</obj_property>
+      <obj_property name="radix_fractionWidth">14</obj_property>
       <obj_property name="radix_otherWidth">0</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/math_tb/c">
@@ -69,7 +69,7 @@
       <obj_property name="ObjectShortName">c[31:0]</obj_property>
       <obj_property name="Radix">REALRADIX</obj_property>
       <obj_property name="radix_realType">SIGNEDFIXEDPOINTRADIX</obj_property>
-      <obj_property name="radix_fractionWidth">16</obj_property>
+      <obj_property name="radix_fractionWidth">14</obj_property>
       <obj_property name="radix_otherWidth">0</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/math_tb/PERIOD">
@@ -89,7 +89,7 @@
       <obj_property name="ObjectShortName">a[31:0]</obj_property>
       <obj_property name="Radix">REALRADIX</obj_property>
       <obj_property name="radix_realType">SIGNEDFIXEDPOINTRADIX</obj_property>
-      <obj_property name="radix_fractionWidth">16</obj_property>
+      <obj_property name="radix_fractionWidth">14</obj_property>
       <obj_property name="radix_otherWidth">0</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/math_tb/c_ab_mult/b">
@@ -97,7 +97,7 @@
       <obj_property name="ObjectShortName">b[31:0]</obj_property>
       <obj_property name="Radix">REALRADIX</obj_property>
       <obj_property name="radix_realType">SIGNEDFIXEDPOINTRADIX</obj_property>
-      <obj_property name="radix_fractionWidth">16</obj_property>
+      <obj_property name="radix_fractionWidth">14</obj_property>
       <obj_property name="radix_otherWidth">0</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/math_tb/c_ab_mult/c">
@@ -105,15 +105,19 @@
       <obj_property name="ObjectShortName">c[31:0]</obj_property>
       <obj_property name="Radix">REALRADIX</obj_property>
       <obj_property name="radix_realType">SIGNEDFIXEDPOINTRADIX</obj_property>
-      <obj_property name="radix_fractionWidth">16</obj_property>
+      <obj_property name="radix_fractionWidth">14</obj_property>
       <obj_property name="radix_otherWidth">0</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/math_tb/c_ab_mult/mult">
       <obj_property name="ElementShortName">mult[63:0]</obj_property>
       <obj_property name="ObjectShortName">mult[63:0]</obj_property>
       <obj_property name="Radix">REALRADIX</obj_property>
-      <obj_property name="radix_realType">UNSIGNEDFIXEDPOINTRADIX</obj_property>
+      <obj_property name="radix_realType">SIGNEDFIXEDPOINTRADIX</obj_property>
       <obj_property name="radix_fractionWidth">32</obj_property>
       <obj_property name="radix_otherWidth">0</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/math_tb/c_ab_mult/overflow">
+      <obj_property name="ElementShortName">overflow</obj_property>
+      <obj_property name="ObjectShortName">overflow</obj_property>
    </wvobject>
 </wave_config>
