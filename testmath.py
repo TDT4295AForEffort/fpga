@@ -25,13 +25,16 @@ with open("mult.txt") as file:
     percerrors = []
     errors = []
     for line in file:
-        a, b, c = line.split()
+        try:
+            a, b, c = line.split()
+        except ValueError as e:
+            print(e, line)
         a = mp.mpf(a) / 2**14
         b = mp.mpf(b) / 2**14
         c = mp.mpf(c) / 2**14
-        errors.append(a*b-c)
-        percerrors.append((a*b-c)/(a*b))
-        if (a*b-c)/(a*b) > 0.005:
+        errors.append(a/b-c)
+        percerrors.append((a/b-c)/(a/b))
+        if (a/b-c)/(a/b) > 0.005:
             print(a,b,c)
     print(max(percerrors), sum(errors), sum(percerrors)/len(percerrors), sum(errors)/len(errors))
 
