@@ -37,7 +37,7 @@ module toplevel
 		output wire [3:0] hw_vga_out_blue
 	);
 	// possible universal reset signal for future
-	wire reset;
+	wire reset = 0;
 	// 100mhz clock, bc things are written with this assumption and it should be explicit
 	wire clk100;
 	// currently master clock is 100mhz.
@@ -60,9 +60,15 @@ module toplevel
         
     // wires for writing pixels to framebuffer.
     wire [15:0] pixwrite_data;
+    wire pixwrite_enable;
     wire [9:0] pixwrite_x, pixwrite_y;
+    
     // frame buffer write test
-    ray_caster rays(clk100, clk100_4state, pixwrite_x, pixwrite_y, pixwrite_data); 
+    wire [31:0] raycaster_output_ray;
+    wire [9:0] raycaster_output_xpos;
+    wire send_new_ray;
+    ray_caster rays(.clk100(clk100), .fourstate(clk100_4state), .send_new_ray(send_new_ray), .output_ray(raycaster_output_ray), .output_xpos(raycaster_output_xpos));
+    pixel_generator pixels(.clk100(clk100), .fourstate(clk100_4state), .in_ray(raycaster_output_ray), .in_xpos(raycaster_output_xpos), .send_new_ray(send_new_ray), .x(pixwrite_x), .y(pixwrite_y), .data(pixwrite_data), .pixwrite_enable(pixwrite_enable)); 
 
 
     // ram controller to output pixel wires
@@ -92,7 +98,7 @@ module toplevel
     sram_controller sram_controller(.clk100(clk100), .clk100_4state(clk100_4state), 
                                     .sram_addr(ram_addr), .sram_data_in(ram_data_in), .sram_data_out(ram_data_out), .sram_write(ram_write), 
                                     .pixread_x(pixread_x), .pixread_y(y), .pixread_data(pixelread), .pixread_valid(pixel_read_valid),
-                                    .pixwrite_x(pixwrite_x), .pixwrite_y(pixwrite_y), .pixwrite_data(pixwrite_data), .pixwrite_enable(1)
+                                    .pixwrite_x(pixwrite_x), .pixwrite_y(pixwrite_y), .pixwrite_data(pixwrite_data), .pixwrite_enable(pixwrite_enable)
                                     );
 
     // stand-in for sram, block ram ip module, with one port set to 16bit rw access, 320*240 = 76800 depth
