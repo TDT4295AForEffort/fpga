@@ -27,23 +27,28 @@ module math_tb(
     parameter PERIOD = 10;
     parameter HPERIOD = PERIOD/2;
     localparam hperiod = 5;
-    reg [31:0] ar = 0'h0001_0000;
-    reg [31:0] br = 0'h0001_0001;
-    reg [31:0] cr = 0;
-
+    reg signed [31:0] ar = {18'b0, 14'b0};
+    reg signed [31:0] br = {-18'd53, 2'd1,12'b0};
+    reg signed [31:0] cr = 0;
     wire [31:0] a = ar;
     wire [31:0] b = br;
     wire [31:0] c;
-    
+    integer fd;
+    initial fd = $fopen("/home/odderikf/code/compdes/fpga2/mult.txt", "w");
+
     always @(posedge clk100) begin
         cr = c;
-        ar = ar + 32;
+        ar = ar + 1;
+        $fwrite(fd, ar, br, cr);
+        $fwrite(fd, "\n");
     end
-    mult_fixedfull c_ab_mult(a,b,c);
+    mulq18_14 c_ab_mult(a,b,c);
     initial begin
-        repeat(10000) begin
+        repeat(20000000) begin
             clk100 <= ~clk100;
             #HPERIOD;
         end
+        $fclose(fd);
+        $finish;
     end
 endmodule

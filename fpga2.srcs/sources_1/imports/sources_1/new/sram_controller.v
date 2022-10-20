@@ -51,12 +51,20 @@ module sram_controller(
     // temporary wrap mapping for the 25's limited bram
     reg [9:0] pixread_x_half = 0;
     reg [9:0] pixread_y_half = 0;
+
+    reg [9:0] pixwrite_x_half = 0;
+    reg [9:0] pixwrite_y_half = 0;
+
     wire [19:0] addr_pix_read = pixread_y_half * 320 + pixread_x_half;
-    wire [19:0] addr_pix_write = pixwrite_y * 320 + pixwrite_x;
-    
+    wire [19:0] addr_pix_write = pixwrite_y_half * 320 + pixwrite_x_half;
+
+
     always @(posedge clk100) begin
-        pixread_x_half = pixread_x >= 320 ? pixread_x-320 : pixread_x;
-        pixread_y_half = pixread_y >= 240 ? pixread_y-240 : pixread_y;
+        pixread_x_half = pixread_x/2;
+        pixread_y_half = pixread_y/2;
+
+        pixwrite_x_half = pixwrite_x[0]||pixwrite_y[0] ? 320 : {1'b0, pixwrite_x[9:1]};
+        pixwrite_y_half = pixwrite_x[0]||pixwrite_y[0] ? 239 : {1'b0, pixwrite_y[9:1]};
     end
     
     
@@ -71,7 +79,7 @@ module sram_controller(
     assign sram_addr = 
         (clk100_4state == pix_read_addr_state ? addr_pix_read :
         (clk100_4state == pix_write_addr_state ? addr_pix_write : 0)
-        );
+    );
 
     // read data is currently always pixel read, it is valid after a delay
     assign pixread_data = sram_data_out;

@@ -20,14 +20,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module mult_fixedfull(
-        input wire [31:0] a,
-        input wire [31:0] b,
-        output wire [31:0] c
+module mulq18_14(
+        input wire signed [31:0] a,
+        input wire signed [31:0] b,
+        output wire signed [31:0] c,
+        output wire overflow
     );
-
-    wire [63:0] mult;
+    // todo add rounding
+    wire signed [63:0] mult;
     assign mult = a*b;
-    assign c = mult[47:16] + mult[15];
-
+    assign c[30:0] = mult[44:14];
+    assign c[31] = mult[63];
+    localparam mask = 'b11111_11111_11111; // 15 ones
+    assign overflow = mult[63] == 0 ? mult[62:48] != 0 : mult[62:48] != mask;
 endmodule
