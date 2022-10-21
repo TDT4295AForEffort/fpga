@@ -31,10 +31,10 @@ module pixel_generator(
         output wire pixwrite_enable
     );    
     reg [15:0] data_reg = 0;
-    reg [9:0] ypos = 0;
-    reg [31:0] bar_border_from_center = 0;
+    reg signed [10:0] ypos = 0;
+    reg signed [31:0] bar_border_from_center = 0;
     reg [31:0] in_ray_reg = 0;
-    reg [9:0] in_xpos_reg = 0;
+    reg signed [10:0] in_xpos_reg = 0;
     reg pix_gen_busy = 0;
     reg send_new_ray_reg = 0;
     assign data = data_reg;
@@ -55,15 +55,15 @@ module pixel_generator(
 
         in_ray_reg = in_ray;
         in_xpos_reg = in_xpos;
-        bar_border_from_center = 663500/in_ray_reg;
+        bar_border_from_center = (32'h27cf5c/in_ray_reg); // Shift left 14, then del, og out er fixed point
 
         // make one pixel per 4 cycles, because that's how often you can write to a single slot.
         if (fourstate == 0 && pix_gen_busy == 1) begin
-            if( (ypos > (240 + bar_border_from_center)) || (ypos < (240 - bar_border_from_center)) ) begin
-                data_reg = 16'hFFFF;
-            end else begin 
+            if( (ypos < (240 + bar_border_from_center)) && (ypos > (240 - bar_border_from_center)) ) begin
                 data_reg = {5'b0, 128 - in_ray_reg[17:12], 6'b0};
                 //data_reg = {5'b00111, 6'b0, in_ray_reg[14:11]};
+            end else begin 
+                data_reg = 16'hFFFF;
             end
 
             if (ypos+1 >= 480) begin
