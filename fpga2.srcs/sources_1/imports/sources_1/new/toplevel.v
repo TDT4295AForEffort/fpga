@@ -48,6 +48,11 @@ module toplevel
 	always @(posedge(clk100))
 	   clk100_4state = clk100_4state + 1;
 	
+    // // Trolling
+    // reg [1:0] hw_vsync_4state = 0;
+	// always @(posedge(hw_vsync))
+	//    hw_vsync_4state = hw_vsync_4state + 1;
+	
 	
 	// vga out synchronization and indexing logic
 	wire video_on;
