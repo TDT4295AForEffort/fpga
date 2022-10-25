@@ -8,6 +8,7 @@ module spi_slave(
     input  wire mosi,
     output wire miso,
     input  wire ss,
+    output wire byte_ready,
     output wire [7:0] out
 );
 
@@ -45,6 +46,8 @@ reg [2:0] bitcnt = 0;
 
 reg byte_received = 0;              // set to high when we've got a byte
 reg [7:0] byte_data_received = 0;
+reg byte_received_last_cycle = 0;
+assign byte_ready = (byte_received & !byte_received_last_cycle);
 
 always @(posedge clk)
 begin
