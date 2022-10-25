@@ -30,6 +30,10 @@
 module toplevel
 	(
 		input wire hw_clk,
+		input wire hw_sclk,
+		input wire hw_mosi,
+		input wire hw_ss,
+		output wire hw_miso,
 		input wire [2:0] hw_sw,
 		output wire hw_hsync, hw_vsync,
 		output wire [3:0] hw_vga_out_red,
@@ -43,6 +47,10 @@ module toplevel
 	// currently master clock is 100mhz.
 	assign clk100 = hw_clk;
 	
+	wire spi_byte_ready;
+	wire [7:0] spi_out;
+	spi_slave slav (.clk(clk100), .sclk(hw_sclk), .miso(hw_miso), .mosi(hw_mosi), .ss(hw_ss), .byte_ready(spi_byte_ready), .out(spi_out));
+
     // state register for 4-state operations in sync with 25MHz VGA out
 	reg [1:0] clk100_4state = 0;
 	always @(posedge(clk100))
