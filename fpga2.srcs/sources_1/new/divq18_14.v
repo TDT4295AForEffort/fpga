@@ -24,19 +24,23 @@ module divq18_14(
         input wire clk,
         input wire signed [31:0] a,
         input wire signed [31:0] b,
-        output reg signed [31:0] c,
-        output reg overflow
+        output wire signed [31:0] c,
+        output wire overflow
     );
-    // todo does not match timing, rewrite entirely
-    // todo add rounding
-    wire signed [45:0] ashift = {a, a[31] ? 14'b1 : 14'b0};
-    wire signed [45:0] div;
-    assign div = ashift/b;
-    localparam mask = 'b11111_11111_1111; // 14 ones
+
+    wire fourthb;
+    reg signed [31:0] firsta = 0;
+    reg signed [31:0] seconda = 0;
+    reg signed [31:0] thirda = 0;
+    reg signed [31:0] fourtha = 0;
+    invq18_14 inverter(clk, b, fourthb);
+
+    mulq18_14 multer(fourtha, fourthb, c);
 
     always @(posedge clk) begin
-        c[30:0] = div[31:0];
-        c[31] = div[45];
-        overflow = div[45] == 0 ? div[45:31] != 0 : div[45:31] != mask;
+        firsta = a;
+        seconda = firsta;
+        thirda = seconda;
+        fourtha = thirda;
     end
 endmodule

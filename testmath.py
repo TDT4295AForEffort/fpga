@@ -1,5 +1,5 @@
-
 from mpmath import mp
+
 mp.dps = 40
 
 # import numpy as np
@@ -21,22 +21,49 @@ mp.dps = 40
 #   └                                             ┘
 
 
-with open("mult.txt") as file:
-    percerrors = []
-    errors = []
-    for line in file:
-        try:
-            a, b, c = line.split()
-        except ValueError as e:
-            print(e, line)
-        a = mp.mpf(a) / 2**14
-        b = mp.mpf(b) / 2**14
-        c = mp.mpf(c) / 2**14
-        errors.append(a/b-c)
-        percerrors.append((a/b-c)/(a/b))
-        if (a/b-c)/(a/b) > 0.005:
-            print(a,b,c)
-    print(max(percerrors), sum(errors), sum(percerrors)/len(percerrors), sum(errors)/len(errors))
+def test_file():
+    with open("mult.txt") as file:
+        percerrors = []
+        errors = []
+        _as = []
+        bs = []
+        cs = []
+        for line in file:
+            try:
+                a, b, c = line.split()
+                _as.append(a)
+                bs.append(b)
+                cs.append(c)
+
+            except ValueError as e:
+                print(e, line)
+        for i in range(4, len(_as)):
+            a = mp.mpf(_as[i]) / 2 ** 14
+            b = mp.mpf(bs[i]) / 2 ** 14
+            c = mp.mpf(cs[i-4]) / 2 ** 14
+            cp = 1 / a
+            e = cp-c
+            errors.append(e)
+            percerrors.append(e / cp)
+            if (e/cp) > 0.5:
+                print(e/cp, e, a, b, c, cp)
+        print(max(percerrors), sum(errors), sum(percerrors) / len(percerrors), sum(errors) / len(errors))
+
 
 # noround   732.355224609375 0.000007543577790232777332720409291189368556142 0.0003662109375
 # yesround  732.355224609375 0.000007543577790232777332720409291189368556142 0.0003662109375
+
+
+def reciprocal(x):
+    xp = x / 2 ** 7
+    rp = 2.82352941 - 1.88235294 * xp
+    err = 1/xp - rp
+    print(err)
+    while abs(err) > 1/2**31:
+        rp = rp + rp*(1 - xp * rp)
+        err = 1/xp - rp
+        print(err)
+    return rp / 2**7
+
+# print(reciprocal(83.3), 1/83.3)
+test_file()
