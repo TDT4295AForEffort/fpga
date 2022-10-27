@@ -25,6 +25,7 @@ module pixel_generator(
         input wire [1:0] fourstate,
         input wire [31:0] in_ray,
         input wire [9:0] in_xpos,
+        input wire read_ray_ready,
         output wire send_new_ray,
         output wire [9:0] x, y,
         output wire [15:0] data,
@@ -36,7 +37,7 @@ module pixel_generator(
     reg [31:0] in_ray_reg = 0;
     reg signed [10:0] in_xpos_reg = 0;
     reg pix_gen_busy = 0;
-    reg send_new_ray_reg = 0;
+    reg send_new_ray_reg = 1;
     assign data = data_reg;
     assign x = in_xpos_reg;
     assign y = ypos;
@@ -46,16 +47,17 @@ module pixel_generator(
 
     always @(posedge clk100) begin
 
-        if(pix_gen_busy == 0) begin
-            send_new_ray_reg = 1;
-            pix_gen_busy = 1;
-        end else begin 
-            send_new_ray_reg = 0;
-        end
-
-        in_ray_reg = in_ray;
-        in_xpos_reg = in_xpos;
-        bar_border_from_center = (32'h27cf5c/in_ray_reg); // Shift left 14, then del, og out er fixed point
+        if(pix_gen_busy == 0 && read_ray_ready == 1) begin
+                in_ray_reg = in_ray;
+                in_xpos_reg = in_xpos;
+                pix_gen_busy = 1;
+                send_new_ray_reg = 1;
+            end else begin 
+                send_new_ray_reg = 0;
+            end
+        
+        // bar_border_from_center = 663500/in_ray_reg;
+        bar_border_from_center = 32'h35147a/in_ray_reg;
 
         // make one pixel per 4 cycles, because that's how often you can write to a single slot.
         if (fourstate == 0 && pix_gen_busy == 1) begin
