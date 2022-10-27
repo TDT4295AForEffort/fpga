@@ -72,8 +72,9 @@ module toplevel
     wire [31:0] raycaster_output_ray;
     wire [9:0] raycaster_output_xpos;
     wire send_new_ray;
-    ray_caster rays(.clk100(clk100), .fourstate(clk100_4state), .send_new_ray(send_new_ray), .output_ray(raycaster_output_ray), .output_xpos(raycaster_output_xpos));
-    pixel_generator pixels(.clk100(clk100), .fourstate(clk100_4state), .in_ray(raycaster_output_ray), .in_xpos(raycaster_output_xpos), .send_new_ray(send_new_ray), .x(pixwrite_x), .y(pixwrite_y), .data(pixwrite_data), .pixwrite_enable(pixwrite_enable)); 
+    wire read_ray_ready;
+    ray_caster rays(.clk100(clk100), .fourstate(clk100_4state), .send_new_ray(send_new_ray), .output_ray(raycaster_output_ray), .output_xpos(raycaster_output_xpos), .read_ray_ready(read_ray_ready));
+    pixel_generator pixels(.clk100(clk100), .fourstate(clk100_4state), .in_ray(raycaster_output_ray), .in_xpos(raycaster_output_xpos), .read_ray_ready(read_ray_ready), .send_new_ray(send_new_ray), .x(pixwrite_x), .y(pixwrite_y), .data(pixwrite_data), .pixwrite_enable(pixwrite_enable)); 
 
 
     // ram controller to output pixel wires
