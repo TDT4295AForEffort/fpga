@@ -47,22 +47,25 @@ player_positions = [
     [2.9, 5.1], 
     ]
 
-for i in range(1, 2*len(player_positions), 2):
-    print("player_positions[{}] = {};".format(i-1, convert_to_fixed_point(player_positions[int(i/2)][0])))
-    print("player_positions[{}] = {};".format(i, convert_to_fixed_point(player_positions[int(i/2)][1])))
+# for i in range(1, 2*len(player_positions), 2):
+#     print("player_positions[{}] = {};".format(i-1, convert_to_fixed_point(player_positions[int(i/2)][0])))
+#     print("player_positions[{}] = {};".format(i, convert_to_fixed_point(player_positions[int(i/2)][1])))
 
-print()
+# print()
 # print("if(counter < 60) begin")
 # print("     player_pos[0] <= player_position[0];")
 # print("     player_pos[1] <= player_position[1];")
-for i in range(0, 2*len(player_positions), 2):
-    print("end else if(counter >= {} && counter <= {}) begin".format(30*i, 30*i + 60))
-    print("     player_pos[0] <= player_positions[{}];".format(i))
-    print("     player_pos[1] <= player_positions[{}];".format(i+1))
-print("     counter <= 0;")
-print("     end")
+# for i in range(0, 2*len(player_positions), 2):
+#     print("end else if(counter >= {} && counter <= {}) begin".format(30*i, 30*i + 60))
+#     print("     player_pos[0] <= player_positions[{}];".format(i))
+#     print("     player_pos[1] <= player_positions[{}];".format(i+1))
+# print("     counter <= 0;")
+# print("     end")
 # for i in range(len(board)):
 #     print("bit_map[{}] = 8'b{};".format(i,board[i]))
+
+print(convert_to_fixed_point(0.5))
+print(convert_to_fixed_point(-0.5))
 
 # Magic constant: 1.327
 

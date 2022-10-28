@@ -55,10 +55,10 @@ module ray_caster(
         player_pos[0] = 32'ha000; // = 2.5
         player_pos[1] = 32'h16000; // = 5.5
 
-        r_d_far_left[0] = 32'h0; //(0,0.99)
-        r_d_far_left[1] = 32'h3f5c; 
+        r_d_far_left[0] = 32'h0; //(0,0.5)
+        r_d_far_left[1] = -32'h2000; 
 
-        r_d_far_right[0] = 32'h3f5c; //(0.99, 0)
+        r_d_far_right[0] = 32'h2000; //(-0.5, 0)
         r_d_far_right[1] = 32'h0;
 
 
@@ -113,17 +113,17 @@ module ray_caster(
         if (ray_cast_state == 0) begin // init stuff
             r_prev[0] <= player_pos[0]; // init prev
             r_prev[1] <= player_pos[1];
+            r_now[0] <= player_pos[0]; // init r_now
+            r_now[1] <= player_pos[1];
             r_d[0] <= r_d_far_left[0] + r_d0_init; // init r_d
             r_d[1] <= r_d_far_left[1] + r_d1_init;
             if(r_d[0] != 0 && r_d[1] != 0) begin
-                r_now[0] <= r_prev[0] + r_d[0]; // init r_now
-                r_now[1] <= r_prev[1] + r_d[1];
                 ray_cast_state <= 2;
             end
         end
         
         if (ray_cast_state == 1) begin // Check collision
-            if(bit_map[r_now_floored[0]][r_now_floored[1]] == 1) begin
+            if(bit_map[r_now_floored[1]][r_now_floored[0]] == 1) begin
                 ray_cast_state <= 3;
             end else begin 
                 ray_cast_state <= 2;
@@ -189,47 +189,6 @@ module ray_caster(
                     player_pos[1] <= player_positions[19];
                     counter <= 0;
                 end
-
-                // if(counter == 0) begin
-                //     player_pos[0] <= player_positions[0];
-                //     player_pos[1] <= player_positions[1];
-                // end else if (counter == 1) begin
-                //     player_pos[0] <= player_positions[2];
-                //     player_pos[1] <= player_positions[3];
-                // end else if (counter == 2) begin
-                //     player_pos[0] <= player_positions[4];
-                //     player_pos[1] <= player_positions[5];
-                // end else if (counter == 3) begin 
-                //     player_pos[0] <= player_positions[6];
-                //     player_pos[1] <= player_positions[7];
-                // end else if (counter == 4) begin
-                //     player_pos[0] <= player_positions[8];
-                //     player_pos[1] <= player_positions[9];
-                // end
-                // if(counter >= 0 && counter <= 60) begin
-                // end else if(counter >= 60 && counter <= 120) begin
-                // end else if(counter >= 120 && counter <= 180) begin
-                // end else if(counter >= 180 && counter <= 240) begin
-                // end else if(counter >= 240 && counter <= 300) begin
-                // end else if(counter >= 300 && counter <= 360) begin
-                //     player_pos[0] <= player_positions[10];
-                //     player_pos[1] <= player_positions[11];
-                // end else if(counter >= 360 && counter <= 420) begin
-                //     player_pos[0] <= player_positions[12];
-                //     player_pos[1] <= player_positions[13];
-                // end else if(counter >= 420 && counter <= 480) begin
-                //     player_pos[0] <= player_positions[14];
-                //     player_pos[1] <= player_positions[15];
-                // end else if(counter >= 480 && counter <= 540) begin
-                //     player_pos[0] <= player_positions[16];
-                //     player_pos[1] <= player_positions[17];
-                // end else if(counter >= 540 && counter <= 600) begin
-                //     player_pos[0] <= player_positions[18];
-                //     player_pos[1] <= player_positions[19];
-                // end else begin 
-                //     counter <= 0;
-                // end
-
 
             end else begin 
                 xpos <= xpos + 1;
