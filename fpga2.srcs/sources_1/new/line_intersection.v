@@ -54,7 +54,6 @@ module line_intersection(
 
     always @(posedge clk100) begin
         if(state == 0 && start == 1) begin
-            read_ready_reg <= 0;
             s <= ((y3-y1)*(x4-x3) - (x3-x1)*(y4-y3))/((x4-x3)*(y2-y1) - (x2-x1)*(y4-y3)) << 14;
             t <= ((x2-x1)*(y3-y1)-(y2-y1)*(x3-x1))/((x4-x3)*(y2-y1)-(x2-x1)*(y4-y3)) << 14;
             state <= 1;
@@ -65,7 +64,7 @@ module line_intersection(
         end
 
         if(state == 6) begin 
-            if(0 <= s && t <= 1) begin
+            if(0 <= s && s <= 1 && 0 <= t && t <= 1) begin
                 collision_reg <= 1;
                 col_point_x_reg <= x1 + (s*(x2-x1) >> 14);
                 col_point_y_reg <= y1 + (s*(y2-y1) >> 14);
@@ -76,6 +75,8 @@ module line_intersection(
             end
             read_ready_reg <= 1;
             state <= 0;
+        end else begin 
+            read_ready_reg <= 0;
         end
     end
 endmodule

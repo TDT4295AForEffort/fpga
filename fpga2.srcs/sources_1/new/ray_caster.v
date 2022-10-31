@@ -101,36 +101,36 @@ module ray_caster(
     reg [9:0] counter = 0;
     reg signed [31:0] player_positions [19:0];
 
-    reg signed [31:0] abs_dx; 
-    reg signed [31:0] abs_dy;
+    reg signed [31:0] abs_dx = 0;
+    reg signed [31:0] abs_dy = 0;
     wire signed [31:0] r_d0_init;
     wire signed [31:0] r_d1_init;
     mulq18_14 r_d0_generator((r_d_far_right[0] - r_d_far_left[0]),((1 + xpos) * 32'h19),  r_d0_init);
     mulq18_14 r_d1_generator((r_d_far_right[1] - r_d_far_left[1]),((1 + xpos) * 32'h19),  r_d1_init);
     
     reg line_a_start = 0;
-    wire line_a_col = 0;
+    wire line_a_col;
     wire signed [31:0] line_a_col_x = 0;
     wire signed [31:0] line_a_col_y = 0;
-    wire line_a_rr = 0;
+    wire line_a_rr;
       
     reg line_b_start = 0;
-    wire line_b_col = 0;
+    wire line_b_col;
     wire signed [31:0] line_b_col_x = 0;
     wire signed [31:0] line_b_col_y = 0;
-    wire line_b_rr = 0;
+    wire line_b_rr;
    
     reg line_c_start = 0;
-    wire line_c_col = 0;
+    wire line_c_col;
     wire signed [31:0] line_c_col_x = 0;
     wire signed [31:0] line_c_col_y = 0;
-    wire line_c_rr = 0;
+    wire line_c_rr;
 
     reg line_d_start = 0;
-    wire line_d_col = 0;
+    wire line_d_col;
     wire signed [31:0] line_d_col_x = 0;
     wire signed [31:0] line_d_col_y = 0;
-    wire line_d_rr = 0;
+    wire line_d_rr;
 
 
     line_intersection line_a(   .clk100(clk100),
@@ -179,6 +179,7 @@ module ray_caster(
                                 .read_ready(line_c_rr)                              
                                 );
     line_intersection line_d(   .clk100(clk100),
+
                                 .x1(r_prev[0]), 
                                 .y1(r_prev[1]),
                                 .x2(r_now[0]),
@@ -193,10 +194,8 @@ module ray_caster(
                                 .col_point_y(line_d_col_y),
                                 .read_ready(line_d_rr)                              
                                 );
-    // line_intersection line_b({r_prev[1], r_prev[0]}, {r_now[1], r_now[0]}, {r_prev_floored[1] + (0 << 14), r_prev_floored[0] + (1 << 14)}, {r_prev_floored[1] + (1 << 14), r_prev_floored[0] + (1 << 14)});
-    // line_intersection line_c({r_prev[1], r_prev[0]}, {r_now[1], r_now[0]}, {r_prev_floored[1] + (0 << 14), r_prev_floored[0] + (0 << 14)}, {r_prev_floored[1] + (0 << 14), r_prev_floored[0] + (1 << 14)});
-    // line_intersection line_d({r_prev[1], r_prev[0]}, {r_now[1], r_now[0]}, {r_prev_floored[1] + (0 << 14), r_prev_floored[0] + (0 << 14)}, {r_prev_floored[1] + (1 << 14), r_prev_floored[0] + (0 << 14)});
 
+    
     always @(posedge clk100) begin 
 
         if (ray_cast_state == 0) begin // init stuff
@@ -210,13 +209,32 @@ module ray_caster(
                 ray_cast_state <= 2;
             end
         end
-        
+
         if (ray_cast_state == 1) begin // Check collision
-            
-            if(bit_map[r_now_floored[1] >> 14][r_now_floored[0] >> 14] == 1) begin
-                ray_cast_state <= 3;
-            end else begin 
-                ray_cast_state <= 2;
+            line_a_start <= 0;
+            line_b_start <= 0;
+            line_c_start <= 0;
+            line_d_start <= 0;
+            if (line_a_rr && line_b_rr && line_c_rr && line_d_rr) begin 
+                if(line_a_col && (bit_map[(r_prev_floored[1] >> 14) + 1][(r_prev_floored[0] >> 14)] == 1)) begin
+                    r_now[1] <= line_a_col_y;
+                    r_now[0] <= line_a_col_x;
+                    ray_cast_state <= 3;
+                end else if(line_b_col && (bit_map[(r_prev_floored[1] >> 14)][(r_prev_floored[0] >> 14) + 1] == 1)) begin
+                    r_now[1] <= line_b_col_y;
+                    r_now[0] <= line_b_col_x;
+                    ray_cast_state <= 3;
+                end else if(line_c_col && (bit_map[(r_prev_floored[1] >> 14) - 1][(r_prev_floored[0] >> 14)] == 1)) begin
+                    r_now[1] <= line_c_col_y;
+                    r_now[0] <= line_c_col_x;
+                    ray_cast_state <= 3;
+                end else if(line_d_col && (bit_map[(r_prev_floored[1] >> 14)][(r_prev_floored[0] >> 14) - 1] == 1)) begin
+                    r_now[1] <= line_d_col_y;
+                    r_now[0] <= line_d_col_x;
+                    ray_cast_state <= 3;
+                end else begin
+                    ray_cast_state <= 2;
+                end
             end
         end
 
@@ -225,15 +243,23 @@ module ray_caster(
             r_prev[1] <= r_now[1];
             r_now[0] <= r_now[0] + r_d[0];
             r_now[1] <= r_now[1] + r_d[1];
-            r_now_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
-            r_now_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
-            r_prev_floored[0] <= r_prev[0] & 32'b11111111111111111100000000000000;
-            r_prev_floored[1] <= r_prev[1] & 32'b11111111111111111100000000000000;
+            //r_now_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
+            //r_now_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
+            r_prev_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
+            r_prev_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
+            line_a_start <= 1;
+            line_b_start <= 1;
+            line_c_start <= 1;
+            line_d_start <= 1;
             ray_cast_state <= 1;
         end
+
+        if(ray_cast_state == 5) begin // extra state to allow refresh abs_dx and abs_dy
+            abs_dx <= player_pos[0] - r_now[0] >= 0 ? player_pos[0] - r_now[0] : r_now[0] - player_pos[0];
+            abs_dy <= player_pos[1] - r_now[1] >= 0 ? player_pos[1] - r_now[1] : r_now[1] - player_pos[1];
+            ray_cast_state <= 3;
+        end
         
-        abs_dx <= player_pos[0] - r_now[0] >= 0 ? player_pos[0] - r_now[0] : r_now[0] - player_pos[0];
-        abs_dy <= player_pos[1] - r_now[1] >= 0 ? player_pos[1] - r_now[1] : r_now[1] - player_pos[1];
 
         if (ray_cast_state == 3) begin // Calculate distance
             //Output
@@ -294,11 +320,6 @@ module ray_caster(
                 read_ray_ready_reg <= 0;
             end
         end
-
-
-        
-        //end
-
 
     end
     
