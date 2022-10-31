@@ -97,9 +97,9 @@ module ray_caster(
     reg signed [31:0] r_d [1:0];
     reg [9:0] ray_cast_state = 0; 
     reg signed [31:0] r_now_floored [1:0];
+    reg signed [31:0] r_prev_floored [1:0];
     reg [9:0] counter = 0;
     reg signed [31:0] player_positions [19:0];
-
 
     reg signed [31:0] abs_dx; 
     reg signed [31:0] abs_dy;
@@ -107,6 +107,95 @@ module ray_caster(
     wire signed [31:0] r_d1_init;
     mulq18_14 r_d0_generator((r_d_far_right[0] - r_d_far_left[0]),((1 + xpos) * 32'h19),  r_d0_init);
     mulq18_14 r_d1_generator((r_d_far_right[1] - r_d_far_left[1]),((1 + xpos) * 32'h19),  r_d1_init);
+    
+    reg line_a_start = 0;
+    wire line_a_col = 0;
+    wire signed [31:0] line_a_col_x = 0;
+    wire signed [31:0] line_a_col_y = 0;
+    wire line_a_rr = 0;
+      
+    reg line_b_start = 0;
+    wire line_b_col = 0;
+    wire signed [31:0] line_b_col_x = 0;
+    wire signed [31:0] line_b_col_y = 0;
+    wire line_b_rr = 0;
+   
+    reg line_c_start = 0;
+    wire line_c_col = 0;
+    wire signed [31:0] line_c_col_x = 0;
+    wire signed [31:0] line_c_col_y = 0;
+    wire line_c_rr = 0;
+
+    reg line_d_start = 0;
+    wire line_d_col = 0;
+    wire signed [31:0] line_d_col_x = 0;
+    wire signed [31:0] line_d_col_y = 0;
+    wire line_d_rr = 0;
+
+
+    line_intersection line_a(   .clk100(clk100),
+                                .x1(r_prev[0]), 
+                                .y1(r_prev[1]),
+                                .x2(r_now[0]),
+                                .y2(r_now[1]),
+                                .x3(r_prev_floored[0]),
+                                .y3(r_prev_floored[1] + (1 << 14)),
+                                .x4(r_prev_floored[0] + (1 << 14)),
+                                .y4(r_prev_floored[1] + (1 << 14)),
+                                .start(line_a_start),
+                                .collision(line_a_col),
+                                .col_point_x(line_a_col_x),
+                                .col_point_y(line_a_col_y),
+                                .read_ready(line_a_rr)                              
+                                );
+    line_intersection line_b(   .clk100(clk100),
+                                .x1(r_prev[0]), 
+                                .y1(r_prev[1]),
+                                .x2(r_now[0]),
+                                .y2(r_now[1]),
+                                .x3(r_prev_floored[0] + (1 << 14)),
+                                .y3(r_prev_floored[1]),
+                                .x4(r_prev_floored[0] + (1 << 14)),
+                                .y4(r_prev_floored[1] + (1 << 14)),
+                                .start(line_b_start),
+                                .collision(line_b_col),
+                                .col_point_x(line_b_col_x),
+                                .col_point_y(line_b_col_y),
+                                .read_ready(line_b_rr)                              
+                                );
+    line_intersection line_c(   .clk100(clk100),
+                                .x1(r_prev[0]), 
+                                .y1(r_prev[1]),
+                                .x2(r_now[0]),
+                                .y2(r_now[1]),
+                                .x3(r_prev_floored[0]),
+                                .y3(r_prev_floored[1]),
+                                .x4(r_prev_floored[0] + (1 << 14)),
+                                .y4(r_prev_floored[1]),
+                                .start(line_c_start),
+                                .collision(line_c_col),
+                                .col_point_x(line_c_col_x),
+                                .col_point_y(line_c_col_y),
+                                .read_ready(line_c_rr)                              
+                                );
+    line_intersection line_d(   .clk100(clk100),
+                                .x1(r_prev[0]), 
+                                .y1(r_prev[1]),
+                                .x2(r_now[0]),
+                                .y2(r_now[1]),
+                                .x3(r_prev_floored[0]),
+                                .y3(r_prev_floored[1]),
+                                .x4(r_prev_floored[0]),
+                                .y4(r_prev_floored[1] + (1 << 14)),
+                                .start(line_d_start),
+                                .collision(line_d_col),
+                                .col_point_x(line_d_col_x),
+                                .col_point_y(line_d_col_y),
+                                .read_ready(line_d_rr)                              
+                                );
+    // line_intersection line_b({r_prev[1], r_prev[0]}, {r_now[1], r_now[0]}, {r_prev_floored[1] + (0 << 14), r_prev_floored[0] + (1 << 14)}, {r_prev_floored[1] + (1 << 14), r_prev_floored[0] + (1 << 14)});
+    // line_intersection line_c({r_prev[1], r_prev[0]}, {r_now[1], r_now[0]}, {r_prev_floored[1] + (0 << 14), r_prev_floored[0] + (0 << 14)}, {r_prev_floored[1] + (0 << 14), r_prev_floored[0] + (1 << 14)});
+    // line_intersection line_d({r_prev[1], r_prev[0]}, {r_now[1], r_now[0]}, {r_prev_floored[1] + (0 << 14), r_prev_floored[0] + (0 << 14)}, {r_prev_floored[1] + (1 << 14), r_prev_floored[0] + (0 << 14)});
 
     always @(posedge clk100) begin 
 
@@ -123,7 +212,8 @@ module ray_caster(
         end
         
         if (ray_cast_state == 1) begin // Check collision
-            if(bit_map[r_now_floored[1]][r_now_floored[0]] == 1) begin
+            
+            if(bit_map[r_now_floored[1] >> 14][r_now_floored[0] >> 14] == 1) begin
                 ray_cast_state <= 3;
             end else begin 
                 ray_cast_state <= 2;
@@ -135,8 +225,10 @@ module ray_caster(
             r_prev[1] <= r_now[1];
             r_now[0] <= r_now[0] + r_d[0];
             r_now[1] <= r_now[1] + r_d[1];
-            r_now_floored[0] <= r_now[0] >> 14;
-            r_now_floored[1] <= r_now[1] >> 14;
+            r_now_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
+            r_now_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
+            r_prev_floored[0] <= r_prev[0] & 32'b11111111111111111100000000000000;
+            r_prev_floored[1] <= r_prev[1] & 32'b11111111111111111100000000000000;
             ray_cast_state <= 1;
         end
         
