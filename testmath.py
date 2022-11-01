@@ -1,4 +1,5 @@
 from mpmath import mp
+import math
 
 mp.dps = 40
 
@@ -38,15 +39,15 @@ def test_file():
             except ValueError as e:
                 print(e, line)
         for i in range(4, len(_as)):
-            a = mp.mpf(_as[i]) / 2 ** 14
-            b = mp.mpf(bs[i]) / 2 ** 14
-            c = mp.mpf(cs[i-4]) / 2 ** 14
-            cp = 1 / a
-            e = cp-c
+            a = mp.mpf(_as[i-4]) / 2 ** 14
+            b = mp.mpf( bs[i-4]) / 2 ** 14
+            c = mp.mpf( cs[i]) / 2 ** 14
+            cpy = a / b
+            e = cpy-c
             errors.append(e)
-            percerrors.append(e / cp)
-            if (e/cp) > 0.5:
-                print(e/cp, e, a, b, c, cp)
+            percerrors.append(e / cpy)
+            if (e/cpy) > 0.4:
+                print(f"e%: {e/cpy}, e:{e}, a:{a}, b:{b}, c:{c}, cpy:{cpy}")
         print(max(percerrors), sum(errors), sum(percerrors) / len(percerrors), sum(errors) / len(errors))
 
 
@@ -55,7 +56,8 @@ def test_file():
 
 
 def reciprocal(x):
-    xp = x / 2 ** 7
+    shiftamnt = math.ceil(math.log2(x))
+    xp = x / 2**shiftamnt
     rp = 2.82352941 - 1.88235294 * xp
     err = 1/xp - rp
     print(err)
@@ -63,7 +65,23 @@ def reciprocal(x):
         rp = rp + rp*(1 - xp * rp)
         err = 1/xp - rp
         print(err)
-    return rp / 2**7
+    return rp / 2**shiftamnt
 
-# print(reciprocal(83.3), 1/83.3)
+def intreciprocal(x):
+    xp1 = x*2**14
+    shiftamnt = 29-math.ceil(math.log2(xp1))
+    shifted = xp1*2**shiftamnt
+    c_1d88235284 = 1010580486
+    c_2d82352941 = 1515870809
+    c_1d0 = 1<<29
+    firstmultres = c_1d88235284*shifted
+    firstguess = c_2d82352941 - int(firstmultres*2**-29)
+    second_shiftedyguess = int(shifted * firstguess)
+    second_product = int(firstguess * (c_1d0 - int(second_shiftedyguess*2**-29)))
+    secondguess = firstguess + int(second_product*2**-29)
+    print(secondguess)
+
+
+x = 0.5078125
+# print(intreciprocal(x), 1/x)
 test_file()

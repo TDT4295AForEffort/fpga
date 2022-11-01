@@ -24,11 +24,13 @@ module divq18_14(
         input wire clk,
         input wire signed [31:0] a,
         input wire signed [31:0] b,
-        output wire signed [31:0] c,
-        output wire overflow
+        output wire signed [31:0] c
     );
 
-    wire fourthb;
+    // delay: 3 cycles.
+    // (cycle 0: input, cycle 1: first pass, cycle 2: third pass, cycle 3: output
+
+    wire signed [31:0] fourthb;
     reg signed [31:0] firsta = 0;
     reg signed [31:0] seconda = 0;
     reg signed [31:0] thirda = 0;
@@ -38,9 +40,9 @@ module divq18_14(
     mulq18_14 multer(fourtha, fourthb, c);
 
     always @(posedge clk) begin
-        firsta = a;
-        seconda = firsta;
-        thirda = seconda;
-        fourtha = thirda;
+        fourtha <= thirda;
+        thirda <= seconda;
+        seconda <= firsta;
+        firsta <= a;
     end
 endmodule
