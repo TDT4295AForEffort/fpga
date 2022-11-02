@@ -31,6 +31,7 @@ module toplevel_tb(
     wire [3:0] r;
     wire [3:0] g;
     wire [3:0] b;
+    wire [3:0] btn = 4'b0101;
     toplevel top
 	(
 		.hw_clk(clk100),
@@ -38,7 +39,9 @@ module toplevel_tb(
 		.hw_hsync(hsync), .hw_vsync(vsync),
 		.hw_vga_out_red(r),
 		.hw_vga_out_green(g),
-		.hw_vga_out_blue(b)
+		.hw_vga_out_blue(b),
+
+		.hw_btn(btn)
 	);
 	
     parameter PERIOD = 10;

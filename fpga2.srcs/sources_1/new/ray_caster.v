@@ -24,6 +24,10 @@ module ray_caster(
         input wire clk100,
         input wire [1:0] fourstate,
         input wire send_new_ray,
+
+        input wire [31:0] player_pos_x,
+        input wire [31:0] player_pos_y,
+
         output wire [31:0] output_ray,
         output wire [9:0] output_xpos,
         output wire read_ray_ready
@@ -100,7 +104,6 @@ module ray_caster(
     reg [9:0] ray_cast_state = 0; 
     reg signed [31:0] r_now_floored [1:0];
     reg signed [31:0] r_prev_floored [1:0];
-    reg [9:0] counter = 0;
     reg signed [31:0] player_positions [19:0];
 
     reg signed [31:0] abs_dx = 0;
@@ -214,6 +217,8 @@ module ray_caster(
     
     always @(posedge clk100) begin 
 
+        player_pos[0] <= player_pos_x;
+        player_pos[1] <= player_pos_y;
         if (ray_cast_state == 0) begin // init stuff
             r_prev[0] <= player_pos[0]; // init prev
             r_prev[1] <= player_pos[1];
@@ -367,40 +372,6 @@ module ray_caster(
             // increment
             if (xpos+1 >= 640) begin
                 xpos <= 0;
-                counter <= counter + 1; // Code to handle shifting perspective
-                if(counter >= 0 && counter <= 60) begin
-                    player_pos[0] <= player_positions[0];
-                    player_pos[1] <= player_positions[1];
-                end else if(counter >= 60 && counter <= 120) begin
-                    player_pos[0] <= player_positions[2];
-                    player_pos[1] <= player_positions[3];
-                end else if(counter >= 120 && counter <= 180) begin
-                    player_pos[0] <= player_positions[4];
-                    player_pos[1] <= player_positions[5];
-                end else if(counter >= 180 && counter <= 240) begin
-                    player_pos[0] <= player_positions[6];
-                    player_pos[1] <= player_positions[7];
-                end else if(counter >= 240 && counter <= 300) begin
-                    player_pos[0] <= player_positions[8];
-                    player_pos[1] <= player_positions[9];
-                end else if(counter >= 300 && counter <= 360) begin
-                    player_pos[0] <= player_positions[10];
-                    player_pos[1] <= player_positions[11];
-                end else if(counter >= 360 && counter <= 420) begin
-                    player_pos[0] <= player_positions[12];
-                    player_pos[1] <= player_positions[13];
-                end else if(counter >= 420 && counter <= 480) begin
-                    player_pos[0] <= player_positions[14];
-                    player_pos[1] <= player_positions[15];
-                end else if(counter >= 480 && counter <= 540) begin
-                    player_pos[0] <= player_positions[16];
-                    player_pos[1] <= player_positions[17];
-                end else if(counter >= 540 && counter <= 600) begin
-                    player_pos[0] <= player_positions[18];
-                    player_pos[1] <= player_positions[19];
-                    counter <= 0;
-                end
-
             end else begin 
                 xpos <= xpos + 1;
             end
