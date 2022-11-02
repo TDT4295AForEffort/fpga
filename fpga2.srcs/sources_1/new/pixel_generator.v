@@ -43,25 +43,33 @@ module pixel_generator(
     assign y = ypos;
     assign pixwrite_enable = pix_gen_busy;
     assign send_new_ray = send_new_ray_reg;
-    
+
+    wire [31:0] bar_border_from_center_wire;
+
+    divq18_14 div_bar_border_from_center(clk100, 32'h35147a, in_ray_reg, bar_border_from_center_wire);
 
     always @(posedge clk100) begin
 
         if(pix_gen_busy == 0 && read_ray_ready == 1) begin
-                in_ray_reg = in_ray;
-                in_xpos_reg = in_xpos;
-                pix_gen_busy = 1;
-                send_new_ray_reg = 1;
-            end else begin 
-                send_new_ray_reg = 0;
-            end
-        
-        // bar_border_from_center = 663500/in_ray_reg;
-        bar_border_from_center = 32'h35147a/in_ray_reg;
+            in_ray_reg = in_ray;
+            in_xpos_reg = in_xpos;
+            pix_gen_busy = 1;
+            send_new_ray_reg = 1;
+        end else begin
+            send_new_ray_reg = 0;
+        end
+
+//        bar_border_from_center = 32'h35147a/in_ray_reg;
+
+        // todo check timings and stuff bc this might off-by-one y position results or smth
+        // todo like, y-positions 0-6 read prev x value's in_ray_reg
+        bar_border_from_center = bar_border_from_center_wire;
 
         // make one pixel per 4 cycles, because that's how often you can write to a single slot.
         if (fourstate == 0 && pix_gen_busy == 1) begin
-            if( (ypos < (240 + bar_border_from_center)) && (ypos > (240 - bar_border_from_center)) ) begin
+            if( (ypos > (240 + bar_border_from_center[31:15])) || (ypos < (240 - bar_border_from_center[31:15])) ) begin
+                data_reg = 16'hFFFF;
+            end else begin 
                 data_reg = {5'b0, 128 - in_ray_reg[17:12], 6'b0};
                 //data_reg = {5'b00111, 6'b0, in_ray_reg[14:11]};
             end else begin 

@@ -38,7 +38,9 @@ module toplevel
 		output wire hw_hsync, hw_vsync,
 		output wire [3:0] hw_vga_out_red,
 		output wire [3:0] hw_vga_out_green,
-		output wire [3:0] hw_vga_out_blue
+		output wire [3:0] hw_vga_out_blue,
+
+		input wire [3:0] hw_btn
 	);
 	// possible universal reset signal for future
 	wire reset = 0;
@@ -81,8 +83,41 @@ module toplevel
     wire [9:0] raycaster_output_xpos;
     wire send_new_ray;
     wire read_ray_ready;
-    ray_caster rays(.clk100(clk100), .fourstate(clk100_4state), .send_new_ray(send_new_ray), .output_ray(raycaster_output_ray), .output_xpos(raycaster_output_xpos), .read_ray_ready(read_ray_ready));
-    pixel_generator pixels(.clk100(clk100), .fourstate(clk100_4state), .in_ray(raycaster_output_ray), .in_xpos(raycaster_output_xpos), .read_ray_ready(read_ray_ready), .send_new_ray(send_new_ray), .x(pixwrite_x), .y(pixwrite_y), .data(pixwrite_data), .pixwrite_enable(pixwrite_enable)); 
+
+    // todo actual input from mcu instead of this
+    // buttons control player position
+    reg signed [63:0] player_pos_x;
+    reg signed [63:0] player_pos_y;
+
+    initial begin
+        player_pos_x = 64'h8000<<32;
+        player_pos_y = 64'h18000<<32;
+    end
+    always @(posedge clk100) begin
+        if      (hw_btn[0]) player_pos_x = player_pos_x + (1<<21);
+        else if (hw_btn[1]) player_pos_x = player_pos_x - (1<<21);
+        if      (hw_btn[2]) player_pos_y = player_pos_y + (1<<21);
+        else if (hw_btn[3]) player_pos_y = player_pos_y - (1<<21);
+    end
+    // endtodo
+
+    ray_caster rays(
+        .clk100(clk100), .fourstate(clk100_4state),
+        .send_new_ray(send_new_ray),
+        .output_ray(raycaster_output_ray),
+        .output_xpos(raycaster_output_xpos),
+        .read_ray_ready(read_ray_ready),
+        .player_pos_x(player_pos_x[63:32]),
+        .player_pos_y(player_pos_y[63:32])
+    );
+    pixel_generator pixels(
+        .clk100(clk100), .fourstate(clk100_4state),
+        .in_ray(raycaster_output_ray),
+        .in_xpos(raycaster_output_xpos),
+        .read_ray_ready(read_ray_ready),
+        .send_new_ray(send_new_ray),
+        .x(pixwrite_x), .y(pixwrite_y), .data(pixwrite_data), .pixwrite_enable(pixwrite_enable)
+    );
 
 
     // ram controller to output pixel wires
