@@ -56,36 +56,11 @@ module ray_caster(
         player_direction[0] = 32'h2d41;
         player_direction[1] = 32'h2d41;
 
-        player_pos[0] = 32'ha000; // = 2.5
-        player_pos[1] = 32'h16000; // = 5.5
+        r_d_far_left[0] = 32'h0;
+        r_d_far_left[1] = -32'h0400; 
 
-        r_d_far_left[0] = 32'h0; //(0,0.5)
-        r_d_far_left[1] = -32'h2000; 
-
-        r_d_far_right[0] = 32'h2000; //(-0.5, 0)
+        r_d_far_right[0] = 32'h0400;
         r_d_far_right[1] = 32'h0;
-
-
-        player_positions[0] = 32'h8000;
-        player_positions[1] = 32'h18000;
-        player_positions[2] = 32'h8666;
-        player_positions[3] = 32'h17999;
-        player_positions[4] = 32'h8ccc;
-        player_positions[5] = 32'h17333;
-        player_positions[6] = 32'h9333;
-        player_positions[7] = 32'h16ccc;
-        player_positions[8] = 32'h9999;
-        player_positions[9] = 32'h16666;
-        player_positions[10] = 32'ha000;
-        player_positions[11] = 32'h16000;
-        player_positions[12] = 32'ha666;
-        player_positions[13] = 32'h15999;
-        player_positions[14] = 32'haccc;
-        player_positions[15] = 32'h15333;
-        player_positions[16] = 32'hb333;
-        player_positions[17] = 32'h14ccc;
-        player_positions[18] = 32'hb999;
-        player_positions[19] = 32'h14666;
 
     end 
 
@@ -99,7 +74,7 @@ module ray_caster(
     reg signed [31:0] r_d_far_left [1:0];
     reg signed [31:0] r_d_far_right [1:0];
     reg signed [31:0] r_d [1:0];
-    reg signed [31:0] r_d_temp [1:0];
+    //reg signed [31:0] r_d_temp [1:0];
     //reg signed [31:0] r_d_temp_change [1:0];
     reg [9:0] ray_cast_state = 0; 
     reg signed [31:0] r_now_floored [1:0];
@@ -112,108 +87,9 @@ module ray_caster(
     wire signed [31:0] r_d1_init;
     mulq18_14 r_d0_generator((r_d_far_right[0] - r_d_far_left[0]),((1 + xpos) * 32'h19),  r_d0_init);
     mulq18_14 r_d1_generator((r_d_far_right[1] - r_d_far_left[1]),((1 + xpos) * 32'h19),  r_d1_init);
-    
-    // reg line_a_start = 0;
-    // wire line_a_col;
-    // wire signed [31:0] line_a_col_x = 0;
-    // wire signed [31:0] line_a_col_y = 0;
-    // wire line_a_rr;
-      
-    // reg line_b_start = 0;
-    // wire line_b_col;
-    // wire signed [31:0] line_b_col_x = 0;
-    // wire signed [31:0] line_b_col_y = 0;
-    // wire line_b_rr;
-   
-    // reg line_c_start = 0;
-    // wire line_c_col;
-    // wire signed [31:0] line_c_col_x = 0;
-    // wire signed [31:0] line_c_col_y = 0;
-    // wire line_c_rr;
 
-    // reg line_d_start = 0;
-    // wire line_d_col;
-    // wire signed [31:0] line_d_col_x = 0;
-    // wire signed [31:0] line_d_col_y = 0;
-    // wire line_d_rr;
-
-
-    // line_intersection line_a(   .clk100(clk100),
-    //                             .x1(r_prev[0]), 
-    //                             .y1(r_prev[1]),
-    //                             .x2(r_now[0]),
-    //                             .y2(r_now[1]),
-    //                             .x3(r_prev_floored[0]),
-    //                             .y3(r_prev_floored[1] + (1 << 14)),
-    //                             .x4(r_prev_floored[0] + (1 << 14)),
-    //                             .y4(r_prev_floored[1] + (1 << 14)),
-    //                             .start(line_a_start),
-    //                             .collision(line_a_col),
-    //                             .col_point_x(line_a_col_x),
-    //                             .col_point_y(line_a_col_y),
-    //                             .read_ready(line_a_rr)                              
-    //                             );
-    // line_intersection line_b(   .clk100(clk100),
-    //                             .x1(r_prev[0]), 
-    //                             .y1(r_prev[1]),
-    //                             .x2(r_now[0]),
-    //                             .y2(r_now[1]),
-    //                             .x3(r_prev_floored[0] + (1 << 14)),
-    //                             .y3(r_prev_floored[1]),
-    //                             .x4(r_prev_floored[0] + (1 << 14)),
-    //                             .y4(r_prev_floored[1] + (1 << 14)),
-    //                             .start(line_b_start),
-    //                             .collision(line_b_col),
-    //                             .col_point_x(line_b_col_x),
-    //                             .col_point_y(line_b_col_y),
-    //                             .read_ready(line_b_rr)                              
-    //                             );
-    // line_intersection line_c(   .clk100(clk100),
-    //                             .x1(r_prev[0]), 
-    //                             .y1(r_prev[1]),
-    //                             .x2(r_now[0]),
-    //                             .y2(r_now[1]),
-    //                             .x3(r_prev_floored[0]),
-    //                             .y3(r_prev_floored[1]),
-    //                             .x4(r_prev_floored[0] + (1 << 14)),
-    //                             .y4(r_prev_floored[1]),
-    //                             .start(line_c_start),
-    //                             .collision(line_c_col),
-    //                             .col_point_x(line_c_col_x),
-    //                             .col_point_y(line_c_col_y),
-    //                             .read_ready(line_c_rr)                              
-    //                             );
-    // line_intersection line_d(   .clk100(clk100),
-
-    //                             .x1(r_prev[0]), 
-    //                             .y1(r_prev[1]),
-    //                             .x2(r_now[0]),
-    //                             .y2(r_now[1]),
-    //                             .x3(r_prev_floored[0]),
-    //                             .y3(r_prev_floored[1]),
-    //                             .x4(r_prev_floored[0]),
-    //                             .y4(r_prev_floored[1] + (1 << 14)),
-    //                             .start(line_d_start),
-    //                             .collision(line_d_col),
-    //                             .col_point_x(line_d_col_x),
-    //                             .col_point_y(line_d_col_y),
-    //                             .read_ready(line_d_rr)                              
-    //                             );
-
-    wire signed [31:0] now_prev_floor_diff_x = (r_now_floored[0] - r_prev_floored[0]);
-    wire signed [31:0] now_prev_floor_diff_y = (r_now_floored[1] - r_prev_floored[1]);
-    wire signed [31:0] abs_now_prev_floor_diff_x =  now_prev_floor_diff_x >= 0 ? now_prev_floor_diff_x : -now_prev_floor_diff_x;
-    wire signed [31:0] abs_now_prev_floor_diff_y =  now_prev_floor_diff_y >= 0 ? now_prev_floor_diff_y : -now_prev_floor_diff_y;
-    wire signed [31:0] sigma_x = (r_d[0]/r_d[1]); // Not fixed cuz cleaner code
-    wire signed [31:0] sigma_y = (r_d[1]/r_d[0]); // Not fixed cuz cleaner code
     reg signed [31:0] texture_index = 0;
-    // wire signed [31:0] dx0 = r_now_floored[0] - r_prev[0]; 
-    // wire signed [31:0] dy0 = r_now_floored[1] - r_prev[1]; 
-    // wire signed [31:0] dx1 = r_now_floored[0] - r_now[0]; 
-    // wire signed [31:0] dy1 = r_now_floored[1] - r_now[1]; 
-    // wire signed [31:0] dytot = r_now[1] - r_prev[1]; 
-    // wire signed [31:0] dxtot = r_now[0] - r_prev[0];
-    // reg signed [31:0] block_index = 0;
+
     
     always @(posedge clk100) begin 
 
@@ -226,52 +102,18 @@ module ray_caster(
             r_now[1] <= player_pos[1];
             r_d[0] <= r_d_far_left[0] + r_d0_init; // init r_d
             r_d[1] <= r_d_far_left[1] + r_d1_init;
-            // r_d_temp[0] <= (r_d_far_left[0] + r_d0_init)*32'h2000; // init r_d_temp
-            // r_d_temp[1] <= (r_d_far_left[1] + r_d1_init)*32'h2000;
             if(r_d[0] != 0 && r_d[1] != 0) begin
                 ray_cast_state <= 2;
             end
         end
 
         if (ray_cast_state == 1) begin // Check collision
-            if(abs_now_prev_floor_diff_x + abs_now_prev_floor_diff_y == 2) begin 
-                ray_cast_state <= 6;
-            end else begin
                 if(bit_map[r_now_floored[1] >> 14][r_now_floored[0] >> 14] == 1) begin
-                    ray_cast_state <= 5;
+                    ray_cast_state <= 3;
                 end else begin 
                     ray_cast_state <= 2;
-                end
             end
         end
-
-        // if (ray_cast_state == 1) begin // Check collision
-        //     line_a_start <= 0;
-        //     line_b_start <= 0;
-        //     line_c_start <= 0;
-        //     line_d_start <= 0;
-        //     if (line_a_rr && line_b_rr && line_c_rr && line_d_rr) begin 
-        //         if(line_a_col && (bit_map[(r_prev_floored[1] >> 14) + 1][(r_prev_floored[0] >> 14)] == 1)) begin
-        //             r_now[1] <= line_a_col_y;
-        //             r_now[0] <= line_a_col_x;
-        //             ray_cast_state <= 3;
-        //         end else if(line_b_col && (bit_map[(r_prev_floored[1] >> 14)][(r_prev_floored[0] >> 14) + 1] == 1)) begin
-        //             r_now[1] <= line_b_col_y;
-        //             r_now[0] <= line_b_col_x;
-        //             ray_cast_state <= 3;
-        //         end else if(line_c_col && (bit_map[(r_prev_floored[1] >> 14) - 1][(r_prev_floored[0] >> 14)] == 1)) begin
-        //             r_now[1] <= line_c_col_y;
-        //             r_now[0] <= line_c_col_x;
-        //             ray_cast_state <= 3;
-        //         end else if(line_d_col && (bit_map[(r_prev_floored[1] >> 14)][(r_prev_floored[0] >> 14) - 1] == 1)) begin
-        //             r_now[1] <= line_d_col_y;
-        //             r_now[0] <= line_d_col_x;
-        //             ray_cast_state <= 3;
-        //         end else begin
-        //             ray_cast_state <= 2;
-        //         end
-        //     end
-        // end
 
         if (ray_cast_state == 2) begin // Normal Increment rays, update r_now_floored
             r_prev[0] <= r_now[0];
@@ -282,84 +124,17 @@ module ray_caster(
             r_now_floored[1] <= (r_now[1] + r_d[1]) & 32'b11111111111111111100000000000000;
             r_prev_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
             r_prev_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
-            r_d_temp[0] = r_d[0]*32'h2000; // = 0.5
-            r_d_temp[1] = r_d[1]*32'h2000;
-            // line_a_start <= 1;
-            // line_b_start <= 1;
-            // line_c_start <= 1;
-            // line_d_start <= 1;
             ray_cast_state <= 1;
         end
 
-        if(ray_cast_state == 6) begin //Bisect increment r_now, find prober r_now value
-            if(r_d_temp[0] == 0 && r_d_temp[1] == 0) begin
-                // return, reset r_d_temp
-                ray_cast_state <= 1;
-            end else begin
-                if(abs_now_prev_floor_diff_x + abs_now_prev_floor_diff_y == 2) begin 
-                    // Sub half, reduce r_d_temp
-                    r_now[0] = r_now[0] - r_d_temp[0];
-                    r_now[1] = r_now[1] - r_d_temp[1];
-                    r_now_floored[0] <= (r_now[0] - r_d_temp[0]) & 32'b11111111111111111100000000000000;
-                    r_now_floored[1] <= (r_now[1] - r_d_temp[1]) & 32'b11111111111111111100000000000000;
-                    r_d_temp[0] = r_d_temp[0]*32'h2000;
-                    r_d_temp[1] = r_d_temp[1]*32'h2000;
-                end else if(abs_now_prev_floor_diff_x + abs_now_prev_floor_diff_y == 0) begin 
-                    // Add half, reduce r_d_temp
-                    r_now[0] = r_now[0] + r_d_temp[0];
-                    r_now[1] = r_now[1] + r_d_temp[1];
-                    r_now_floored[0] <= (r_now[0] + r_d_temp[0]) & 32'b11111111111111111100000000000000;
-                    r_now_floored[1] <= (r_now[1] + r_d_temp[1]) & 32'b11111111111111111100000000000000;
-                    r_d_temp[0] = r_d_temp[0]*32'h2000;
-                    r_d_temp[1] = r_d_temp[1]*32'h2000;
-                end else begin 
-                    // return, reset r_d_temp
-                    // r_d_temp[0] = r_d[0]*32'h2000;
-                    // r_d_temp[1] = r_d[1]*32'h2000;
-                    ray_cast_state <= 1;
-                end
-            end
-        end
-
-        if(ray_cast_state == 5) begin // Find block index and add time for division
-            // Make one for n,s,e,w
-            if(now_prev_floor_diff_x == -1 && now_prev_floor_diff_y == 0) begin // West
-                texture_index <= (r_prev[1] - r_now_floored[1]) + (r_now_floored[0] - r_prev[0])*sigma_y; // From bottom up
-            end else if (now_prev_floor_diff_x == 0 && now_prev_floor_diff_y == 1) begin // North 
-                texture_index <= (1 << 14) + (r_prev[0] - r_now_floored[0]) + (r_now_floored[1] + (1 << 14) - r_prev[1])*sigma_x; // From left to right
-            end else if (now_prev_floor_diff_x == 1 && now_prev_floor_diff_y == 0) begin // East
-                texture_index <= (3 << 14) - (r_prev[1] - r_now_floored[1]) + (r_now_floored[0] + (1 << 14) - r_prev[0])*sigma_y; // From bottom up
-            end else if (now_prev_floor_diff_x == 0 && now_prev_floor_diff_y == -1) begin // South
-                texture_index <= (4 << 14) - (r_prev[0] - r_now_floored[0]) + (r_now_floored[1] - r_prev[1])*sigma_x; // From left to right
-            end
-            ray_cast_state <= 7;
-        end
-
-        if (ray_cast_state == 7) begin 
-            if(texture_index >= 0 && texture_index < 1) begin 
-                r_now[0] <= r_now_floored[0];
-                r_now[1] <= r_now_floored[1] + texture_index;
-            end else if (texture_index >= 1 && texture_index < 2) begin 
-                r_now[0] <= r_now_floored[0] + (texture_index - (1 << 14));
-                r_now[1] <= r_now_floored[1] + (1 << 14);
-            end else if (texture_index >= 2 && texture_index < 3) begin 
-                r_now[0] <= r_now_floored[0] + (1 << 14);
-                r_now[1] <= r_now_floored[1] + ((3 << 14) - texture_index);
-            end else if (texture_index >= 3 && texture_index <= 4) begin 
-                r_now[0] <= r_now_floored[0] + ((4 << 14) - texture_index);
-                r_now[1] <= r_now_floored[1];
-            end
-            ray_cast_state <= 8;
-        end
-
-        if (ray_cast_state == 8) begin 
+        if (ray_cast_state == 3) begin 
             abs_dx <= player_pos[0] - r_now[0] >= 0 ? player_pos[0] - r_now[0] : r_now[0] - player_pos[0];
             abs_dy <= player_pos[1] - r_now[1] >= 0 ? player_pos[1] - r_now[1] : r_now[1] - player_pos[1];
-            ray_cast_state <= 3;
+            ray_cast_state <= 4;
         end
         
 
-        if (ray_cast_state == 3) begin // Calculate distance
+        if (ray_cast_state == 4) begin // Calculate distance
             //Output
             output_ray_reg <= abs_dx < abs_dy ? (32'h1a3d*abs_dx >> 14) + (32'h3c3d*abs_dy >> 14) : (32'h1a3d*abs_dy >> 14) + (32'h3c3d*abs_dx >> 14); // Magic number = 0.41, 0.941246
             output_xpos_reg <= xpos;
@@ -375,10 +150,10 @@ module ray_caster(
             end else begin 
                 xpos <= xpos + 1;
             end
-            ray_cast_state <= 4;
+            ray_cast_state <= 5;
         end
 
-        if (ray_cast_state == 4) begin
+        if (ray_cast_state == 5) begin
             if (send_new_ray == 1) begin 
                 ray_cast_state <= 0;
                 read_ray_ready_reg <= 0;
