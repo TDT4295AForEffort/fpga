@@ -12,7 +12,7 @@ def convert_to_fixed_point(number, int_bit_size=18, fractional_bit_size=14):
     if(num[0] == '-'): 
         sign = '-'
         num = num[1:]
-    return "{}'h".format(int_bit_size+fractional_bit_size) + sign + num[2:]
+    return "{}{}'h".format(sign, int_bit_size+fractional_bit_size) + num[2:]
 
 
 
@@ -64,8 +64,22 @@ player_positions = [
 # for i in range(len(board)):
 #     print("bit_map[{}] = 8'b{};".format(i,board[i]))
 
-print(convert_to_fixed_point(0.5))
-print(convert_to_fixed_point(-0.5))
+
+# print(convert_to_fixed_point(1))
+# print(convert_to_fixed_point(0))
+factor = 1
+angle = (5/180)*pi
+print("A")
+print(convert_to_fixed_point(cos(angle)*factor))
+print(convert_to_fixed_point(sin(angle)*factor))
+print(convert_to_fixed_point(-sin(angle)*factor))
+print(convert_to_fixed_point(cos(angle)*factor))
+
+print("B")
+print(convert_to_fixed_point(cos(-angle)*factor))
+print(convert_to_fixed_point(sin(-angle)*factor))
+print(convert_to_fixed_point(-sin(-angle)*factor))
+print(convert_to_fixed_point(cos(-angle)*factor))
 
 # Magic constant: 1.327
 
