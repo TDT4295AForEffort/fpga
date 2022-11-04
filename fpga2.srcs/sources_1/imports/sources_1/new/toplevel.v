@@ -86,12 +86,73 @@ module toplevel
         player_pos_y = 64'h18000<<32;
     end
     always @(posedge clk100) begin
-        if      (hw_btn[0]) player_pos_x = player_pos_x + (1<<21);
-        else if (hw_btn[1]) player_pos_x = player_pos_x - (1<<21);
-        if      (hw_btn[2]) player_pos_y = player_pos_y + (1<<21);
-        else if (hw_btn[3]) player_pos_y = player_pos_y - (1<<21);
+        //if      (hw_btn[0]) player_pos_x = player_pos_x + (1<<21);
+        //else 
+        if (hw_btn[1]) begin 
+            player_pos_x = player_pos_x - (player_direction[0] << 7);
+            player_pos_y = player_pos_y - (player_direction[1] << 7);
+        end
+        if (hw_btn[2]) begin 
+            player_pos_x = player_pos_x + (player_direction[0] << 7);
+            player_pos_y = player_pos_y + (player_direction[1] << 7);
+        end
+        //else if (hw_btn[3]) player_pos_y = player_pos_y - (1<<21);
     end
     // endtodo
+    
+    reg signed [31:0] player_direction [1:0]; // [x,y] normalized
+    initial begin
+        player_direction[0] = 32'h2d41; // cos(pi/4)
+        player_direction[1] = 32'h2d41; // sin(pi/4)
+    end
+
+    // Matrix mul to calculate new player direction on right and left turn
+    wire signed [31:0] a_0 = 32'h3fc1; //  cos(5*)
+    wire signed [31:0] a_1 = 32'h593; //  sin(5*)
+    wire signed [31:0] a_2 = -32'h594;// -sin(5*)
+    wire signed [31:0] a_3 = 32'h3fc1; //  cos(5*)
+    wire signed [31:0] b_0 = 32'h3fc1; //  cos(-5*)
+    wire signed [31:0] b_1 = -32'h594;//  sin(-5*)
+    wire signed [31:0] b_2 = 32'h593; // -sin(-5*)
+    wire signed [31:0] b_3 = 32'h3fc1; //  cos(-5*)
+
+    wire signed [31:0] a_0_product;
+    wire signed [31:0] a_1_product;
+    wire signed [31:0] a_2_product;
+    wire signed [31:0] a_3_product;
+    wire signed [31:0] b_0_product;
+    wire signed [31:0] b_1_product;
+    wire signed [31:0] b_2_product;
+    wire signed [31:0] b_3_product;
+    
+    mulq18_14 a0_mul(player_direction[0], a_0, a_0_product);
+    mulq18_14 a1_mul(player_direction[0], a_1, a_1_product);
+    mulq18_14 a2_mul(player_direction[1], a_2, a_2_product);
+    mulq18_14 a3_mul(player_direction[1], a_3, a_3_product);
+    mulq18_14 b0_mul(player_direction[0], b_0, b_0_product);
+    mulq18_14 b1_mul(player_direction[0], b_1, b_1_product);
+    mulq18_14 b2_mul(player_direction[1], b_2, b_2_product);
+    mulq18_14 b3_mul(player_direction[1], b_3, b_3_product);
+    wire signed [31:0] new_pd_l_x =  a_0_product + a_2_product;
+    wire signed [31:0] new_pd_l_y =  a_1_product + a_3_product;
+    wire signed [31:0] new_pd_r_x =  b_0_product + b_2_product;
+    wire signed [31:0] new_pd_r_y =  b_1_product + b_3_product;
+
+    reg [31:0] turn_counter = 0;
+    always @(posedge clk100) begin 
+        if(turn_counter == 10000000) begin
+            if(hw_btn[3]) begin //left turn
+                player_direction[0] <= new_pd_l_x;
+                player_direction[1] <= new_pd_l_y;
+            end else if (hw_btn[0]) begin //right turn
+                player_direction[0] <= new_pd_r_x;
+                player_direction[1] <= new_pd_r_y;
+            end
+            turn_counter <= 0;
+        end else begin 
+            turn_counter <= turn_counter + 1;
+        end
+    end
 
     ray_caster rays(
         .clk100(clk100), .fourstate(clk100_4state),
@@ -100,7 +161,9 @@ module toplevel
         .output_xpos(raycaster_output_xpos),
         .read_ray_ready(read_ray_ready),
         .player_pos_x(player_pos_x[63:32]),
-        .player_pos_y(player_pos_y[63:32])
+        .player_pos_y(player_pos_y[63:32]),
+        .player_direction_x(player_direction[0]),
+        .player_direction_y(player_direction[1])
     );
     pixel_generator pixels(
         .clk100(clk100), .fourstate(clk100_4state),

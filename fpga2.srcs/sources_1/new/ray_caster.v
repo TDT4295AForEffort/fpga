@@ -27,6 +27,8 @@ module ray_caster(
 
         input wire [31:0] player_pos_x,
         input wire [31:0] player_pos_y,
+        input wire signed [31:0] player_direction_x,
+        input wire signed [31:0] player_direction_y,
 
         output wire [31:0] output_ray,
         output wire [9:0] output_xpos,
@@ -45,30 +47,28 @@ module ray_caster(
 
     initial begin
         bit_map[0] = 8'b11111111;
-        bit_map[1] = 8'b11010001;
-        bit_map[2] = 8'b10100101;
+        bit_map[1] = 8'b10000001;
+        bit_map[2] = 8'b10101011;
         bit_map[3] = 8'b10000001;
-        bit_map[4] = 8'b10000101;
+        bit_map[4] = 8'b11010101;
         bit_map[5] = 8'b10000001;
-        bit_map[6] = 8'b10000101;
+        bit_map[6] = 8'b10001011;
         bit_map[7] = 8'b11111111;
 
-        player_direction[0] = 32'h2d41;
-        player_direction[1] = 32'h2d41;
 
-        r_d_far_left[0] = 32'h0;
-        r_d_far_left[1] = -32'h0400; 
 
-        r_d_far_right[0] = 32'h0400;
-        r_d_far_right[1] = 32'h0;
+        //r_d_far_left[0] = 32'h0;
+        //r_d_far_left[1] = -32'h0400; 
+
+        //r_d_far_right[0] = 32'h0400;
+        //r_d_far_right[1] = 32'h0;
 
     end 
 
     // Internals
     reg signed [7:0] bit_map [7:0];
-    reg signed [31:0] player_direction [1:0]; // [x,y] normalized
     reg signed [31:0] player_pos [1:0]; // [x, y]
-    reg signed [31:0] hfov = 90 << 14;
+    //reg signed [31:0] hfov = 90 << 14;
     reg signed [31:0] r_now [1:0];
     reg signed [31:0] r_prev [1:0];
     reg signed [31:0] r_d_far_left [1:0];
@@ -79,7 +79,7 @@ module ray_caster(
     reg [9:0] ray_cast_state = 0; 
     reg signed [31:0] r_now_floored [1:0];
     reg signed [31:0] r_prev_floored [1:0];
-    reg signed [31:0] player_positions [19:0];
+    //reg signed [31:0] player_positions [19:0];
 
     reg signed [31:0] abs_dx = 0;
     reg signed [31:0] abs_dy = 0;
@@ -88,6 +88,42 @@ module ray_caster(
     mulq18_14 r_d0_generator((r_d_far_right[0] - r_d_far_left[0]),((1 + xpos) * 32'h19),  r_d0_init);
     mulq18_14 r_d1_generator((r_d_far_right[1] - r_d_far_left[1]),((1 + xpos) * 32'h19),  r_d1_init);
 
+    // Matrix mul to find far_left and far_right from player_direction
+    wire signed [31:0] a_0 = 32'h2d4; //  cos(pi/4)/16
+    wire signed [31:0] a_1 = 32'h2d4; //  sin(pi/4)/16
+    wire signed [31:0] a_2 = -32'h2d5;// -sin(pi/4)/16
+    wire signed [31:0] a_3 = 32'h2d4; //  cos(pi/4)/16
+    wire signed [31:0] b_0 = 32'h2d4; //  cos(-pi/4)/16
+    wire signed [31:0] b_1 = -32'h2d5;//  sin(-pi/4)/16
+    wire signed [31:0] b_2 = 32'h2d4; // -sin(-pi/4)/16
+    wire signed [31:0] b_3 = 32'h2d4; //  cos(-pi/4)/16
+
+    wire signed [31:0] a_0_product;
+    wire signed [31:0] a_1_product;
+    wire signed [31:0] a_2_product;
+    wire signed [31:0] a_3_product;
+
+    wire signed [31:0] b_0_product;
+    wire signed [31:0] b_1_product;
+    wire signed [31:0] b_2_product;
+    wire signed [31:0] b_3_product;
+    
+    mulq18_14 a0_mul(player_direction_x, a_0, a_0_product);
+    mulq18_14 a1_mul(player_direction_x, a_1, a_1_product);
+    mulq18_14 a2_mul(player_direction_y, a_2, a_2_product);
+    mulq18_14 a3_mul(player_direction_y, a_3, a_3_product);
+    
+    mulq18_14 b0_mul(player_direction_x, b_0, b_0_product);
+    mulq18_14 b1_mul(player_direction_x, b_1, b_1_product);
+    mulq18_14 b2_mul(player_direction_y, b_2, b_2_product);
+    mulq18_14 b3_mul(player_direction_y, b_3, b_3_product);
+
+    wire signed [31:0] far_l_x =  a_0_product + a_2_product;
+    wire signed [31:0] far_l_y =  a_1_product + a_3_product;
+
+    wire signed [31:0] far_r_x =  b_0_product + b_2_product;
+    wire signed [31:0] far_r_y =  b_1_product + b_3_product;
+    
     reg signed [31:0] texture_index = 0;
 
     
@@ -95,6 +131,12 @@ module ray_caster(
 
         player_pos[0] <= player_pos_x;
         player_pos[1] <= player_pos_y;
+
+        r_d_far_left[0] <= far_l_x;
+        r_d_far_left[1] <= far_l_y;
+        r_d_far_right[0] <= far_r_x;
+        r_d_far_right[1] <= far_r_y;
+
         if (ray_cast_state == 0) begin // init stuff
             r_prev[0] <= player_pos[0]; // init prev
             r_prev[1] <= player_pos[1];

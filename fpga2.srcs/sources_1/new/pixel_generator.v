@@ -51,12 +51,12 @@ module pixel_generator(
     always @(posedge clk100) begin
 
         if(pix_gen_busy == 0 && read_ray_ready == 1) begin
-            in_ray_reg = in_ray;
-            in_xpos_reg = in_xpos;
-            pix_gen_busy = 1;
-            send_new_ray_reg = 1;
+            in_ray_reg <= in_ray;
+            in_xpos_reg <= in_xpos;
+            pix_gen_busy <= 1;
+            send_new_ray_reg <= 1;
         end else begin
-            send_new_ray_reg = 0;
+            send_new_ray_reg <= 0;
         end
 
 //        bar_border_from_center = 32'h35147a/in_ray_reg;
@@ -68,19 +68,19 @@ module pixel_generator(
         // make one pixel per 4 cycles, because that's how often you can write to a single slot.
         if (fourstate == 0 && pix_gen_busy == 1) begin
             if( (ypos > (240 + bar_border_from_center[31:15])) || (ypos < (240 - bar_border_from_center[31:15])) ) begin
-                data_reg = 16'hFFFF;
+                data_reg <= 16'hFFFF;
             end else begin 
-                data_reg = {5'b0, 128 - in_ray_reg[17:12], 6'b0};
+                data_reg <= {5'b0, 128 - in_ray_reg[17:12], 6'b0};
                 //data_reg = {5'b00111, 6'b0, in_ray_reg[14:11]};
             end else begin 
                 data_reg = 16'hFFFF;
             end
 
             if (ypos+1 >= 480) begin
-                ypos = 0;
-                pix_gen_busy = 0;
+                ypos <= 0;
+                pix_gen_busy <= 0;
             end else begin
-                ypos = ypos + 1;
+                ypos <= ypos + 1;
             end 
         end
     end
