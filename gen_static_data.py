@@ -69,17 +69,19 @@ player_positions = [
 # print(convert_to_fixed_point(0))
 factor = 1
 angle = (5/180)*pi
-print("A")
-print(convert_to_fixed_point(cos(angle)*factor))
-print(convert_to_fixed_point(sin(angle)*factor))
-print(convert_to_fixed_point(-sin(angle)*factor))
-print(convert_to_fixed_point(cos(angle)*factor))
+# print("A")
+# print(convert_to_fixed_point(cos(angle)*factor))
+# print(convert_to_fixed_point(sin(angle)*factor))
+# print(convert_to_fixed_point(-sin(angle)*factor))
+# print(convert_to_fixed_point(cos(angle)*factor))
 
-print("B")
-print(convert_to_fixed_point(cos(-angle)*factor))
-print(convert_to_fixed_point(sin(-angle)*factor))
-print(convert_to_fixed_point(-sin(-angle)*factor))
-print(convert_to_fixed_point(cos(-angle)*factor))
+# print("B")
+# print(convert_to_fixed_point(cos(-angle)*factor))
+# print(convert_to_fixed_point(sin(-angle)*factor))
+# print(convert_to_fixed_point(-sin(-angle)*factor))
+# print(convert_to_fixed_point(cos(-angle)*factor))
+
+print(convert_to_fixed_point(0.1))
 
 # Magic constant: 1.327
 

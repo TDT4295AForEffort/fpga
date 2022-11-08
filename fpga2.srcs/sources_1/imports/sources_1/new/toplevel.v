@@ -86,32 +86,35 @@ module toplevel
 
     // todo actual input from mcu instead of this
     // buttons control player position
-    reg signed [63:0] player_pos_x;
-    reg signed [63:0] player_pos_y;
+    // reg signed [63:0] player_pos_x;
+    // reg signed [63:0] player_pos_y;
 
-    initial begin
-        player_pos_x = 64'h8000<<32;
-        player_pos_y = 64'h18000<<32;
-    end
-    always @(posedge clk100) begin
-        //if      (hw_btn[0]) player_pos_x = player_pos_x + (1<<21);
-        //else 
-        if (hw_btn[1]) begin 
-            player_pos_x = player_pos_x - (player_direction[0] << 7);
-            player_pos_y = player_pos_y - (player_direction[1] << 7);
-        end
-        if (hw_btn[2]) begin 
-            player_pos_x = player_pos_x + (player_direction[0] << 7);
-            player_pos_y = player_pos_y + (player_direction[1] << 7);
-        end
-        //else if (hw_btn[3]) player_pos_y = player_pos_y - (1<<21);
-    end
+    // initial begin
+    //     player_pos_x = 64'h8000<<32;
+    //     player_pos_y = 64'h18000<<32;
+    // end
+    // always @(posedge clk100) begin
+    //     //if      (hw_btn[0]) player_pos_x = player_pos_x + (1<<21);
+    //     //else 
+    //     if (hw_btn[1]) begin 
+    //         player_pos_x = player_pos_x - (player_direction[0] << 7);
+    //         player_pos_y = player_pos_y - (player_direction[1] << 7);
+    //     end
+    //     if (hw_btn[2]) begin 
+    //         player_pos_x = player_pos_x + (player_direction[0] << 7);
+    //         player_pos_y = player_pos_y + (player_direction[1] << 7);
+    //     end
+    //     //else if (hw_btn[3]) player_pos_y = player_pos_y - (1<<21);
+    // end
     // endtodo
     
     reg signed [31:0] player_direction [1:0]; // [x,y] normalized
+    reg signed [31:0] player_pos [1:0]; // [x,y] normalized
     initial begin
         player_direction[0] = 32'h2d41; // cos(pi/4)
         player_direction[1] = 32'h2d41; // sin(pi/4)
+        player_pos[0] = 32'h8000; // 2
+        player_pos[1] = 32'h10000; // 4
     end
 
     // Matrix mul to calculate new player direction on right and left turn
@@ -146,6 +149,12 @@ module toplevel
     wire signed [31:0] new_pd_r_x =  b_0_product + b_2_product;
     wire signed [31:0] new_pd_r_y =  b_1_product + b_3_product;
 
+    reg signed [31:0] walk_speed = 32'h666; // 0.1 
+    wire signed [31:0] delta_pos_x;
+    wire signed [31:0] delta_pos_y;
+    mulq18_14 dp_x(player_direction[0], walk_speed, delta_pos_x);
+    mulq18_14 dp_y(player_direction[1], walk_speed, delta_pos_y);
+
     reg [31:0] turn_counter = 0;
     always @(posedge clk100) begin 
         if(turn_counter == 10000000) begin
@@ -155,6 +164,12 @@ module toplevel
             end else if (hw_btn[0]) begin //right turn
                 player_direction[0] <= new_pd_r_x;
                 player_direction[1] <= new_pd_r_y;
+            end else if (hw_btn[1]) begin // Forward 
+                player_pos[0] <= player_pos[0] + delta_pos_x;
+                player_pos[1] <= player_pos[1] + delta_pos_y;
+            end else if (hw_btn[2]) begin// Backward
+                player_pos[0] <= player_pos[0] - delta_pos_x;
+                player_pos[1] <= player_pos[1] - delta_pos_y;
             end
             turn_counter <= 0;
         end else begin 
@@ -168,8 +183,10 @@ module toplevel
         .output_ray(raycaster_output_ray),
         .output_xpos(raycaster_output_xpos),
         .read_ray_ready(read_ray_ready),
-        .player_pos_x(player_pos_x[63:32]),
-        .player_pos_y(player_pos_y[63:32]),
+        // .player_pos_x(player_pos_x[63:32]),
+        // .player_pos_y(player_pos_y[63:32]),
+        .player_pos_x(player_pos[0]),
+        .player_pos_y(player_pos[1]),
         .player_direction_x(player_direction[0]),
         .player_direction_y(player_direction[1])
     );
