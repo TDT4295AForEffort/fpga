@@ -72,8 +72,6 @@ module pixel_generator(
             end else begin 
                 data_reg <= {5'b0, 128 - in_ray_reg[17:12], 6'b0};
                 //data_reg = {5'b00111, 6'b0, in_ray_reg[14:11]};
-            end else begin 
-                data_reg = 16'hFFFF;
             end
 
             if (ypos+1 >= 480) begin
