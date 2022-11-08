@@ -77,7 +77,7 @@ module invq18_14(
 
     localparam c_1d88235284 = 1010580486;
     localparam c_2d82352941 = 1515870809;
-    localparam c_1d0 = {1, 29'd0};
+    localparam c_1d0 = {3'd1, 29'd0};
 
     reg [31:0] first_guess = 0;
     reg [31:0] first_x = 0;

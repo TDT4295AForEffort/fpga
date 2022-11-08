@@ -36,18 +36,33 @@ module toplevel
 		output wire hw_miso,
 		input wire [2:0] hw_sw,
 		output wire hw_hsync, hw_vsync,
-		output wire [3:0] hw_vga_out_red,
-		output wire [3:0] hw_vga_out_green,
-		output wire [3:0] hw_vga_out_blue,
+		output wire [4:0] hw_vga_out_red,
+		output wire [5:0] hw_vga_out_green,
+		output wire [4:0] hw_vga_out_blue,
 
-		input wire [3:0] hw_btn
+		//inout wire [7:0] hw_gpio,
+		output wire [3:0] hw_led,
+
+		input wire [3:0] hw_btn // for demo, todo remove?
 	);
+
+    // Are you compiling for devboard or for pcb 
+    `define ISDEV
 	// possible universal reset signal for future
 	wire reset = 0;
 	// 100mhz clock, bc things are written with this assumption and it should be explicit
 	wire clk100;
-	// currently master clock is 100mhz.
-	assign clk100 = hw_clk;
+    `ifdef ISDEV
+        assign clk100 = hw_clk;
+    `else 
+        clk_wiz_0 clkwiz(.clk_in1(hw_clk), .clk_out1(clk100));
+    `endif
+
+	
+    assign hw_led[0] = 0;
+	assign hw_led[1] = 1;
+	assign hw_led[2] = clk100;
+	assign hw_led[3] = 0;
 	
 	wire spi_byte_ready;
 	wire [7:0] spi_out;
@@ -209,10 +224,9 @@ module toplevel
     end
 
     // vga output colors
-    // currently outs are 4bit, final product will be 5-6-5 hopefully
-    assign hw_vga_out_red = video_on ? pixel[4:1] : 0;
-    assign hw_vga_out_green = video_on ? pixel[10:7] : 0;
-    assign hw_vga_out_blue = video_on ? pixel[15:12] : 0;
+    assign hw_vga_out_red = video_on ? pixel[4:0] : 0;
+    assign hw_vga_out_green = video_on ? pixel[10:5] : 0;
+    assign hw_vga_out_blue = video_on ? pixel[15:11] : 0;
 
     // connections from ram controller to ram
     wire [19:0] ram_addr;
@@ -221,7 +235,6 @@ module toplevel
     wire ram_write;
     
     // controller for accessing ram
-    // todo pixel write is currently always-on,
     // feel free to assign a wire to pixwrite_enable and connect it to your raycaster or whatever,
     // if you end up having dead time where you wait for frame end or smth.
     sram_controller sram_controller(.clk100(clk100), .clk100_4state(clk100_4state), 

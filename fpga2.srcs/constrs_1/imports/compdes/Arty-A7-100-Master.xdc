@@ -12,7 +12,7 @@ set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property CFGBVS VCCO [current_design]
 
 ## Switches
-set_property -dict {PACKAGE_PIN A8 IOSTANDARD LVCMOS33} [get_ports  {hw_sw[0]}]
+set_property -dict {PACKAGE_PIN A8  IOSTANDARD LVCMOS33} [get_ports {hw_sw[0]}]
 set_property -dict {PACKAGE_PIN C11 IOSTANDARD LVCMOS33} [get_ports {hw_sw[1]}]
 set_property -dict {PACKAGE_PIN C10 IOSTANDARD LVCMOS33} [get_ports {hw_sw[2]}]
 #set_property -dict { PACKAGE_PIN A10   IOSTANDARD LVCMOS33 } [get_ports { sw[3] }]; #IO_L14P_T2_SRCC_16 Sch=sw[3]
@@ -32,10 +32,10 @@ set_property -dict {PACKAGE_PIN C10 IOSTANDARD LVCMOS33} [get_ports {hw_sw[2]}]
 #set_property -dict { PACKAGE_PIN K1    IOSTANDARD LVCMOS33 } [get_ports { led3_r }]; #IO_L23N_T3_35 Sch=led3_r
 
 ## LEDs
-#set_property -dict { PACKAGE_PIN H5    IOSTANDARD LVCMOS33 } [get_ports { led[0] }]; #IO_L24N_T3_35 Sch=led[4]
-#set_property -dict { PACKAGE_PIN J5    IOSTANDARD LVCMOS33 } [get_ports { led[1] }]; #IO_25_35 Sch=led[5]
-#set_property -dict { PACKAGE_PIN T9    IOSTANDARD LVCMOS33 } [get_ports { led[2] }]; #IO_L24P_T3_A01_D17_14 Sch=led[6]
-#set_property -dict { PACKAGE_PIN T10   IOSTANDARD LVCMOS33 } [get_ports { led[3] }]; #IO_L24N_T3_A00_D16_14 Sch=led[7]
+set_property -dict { PACKAGE_PIN H5    IOSTANDARD LVCMOS33 } [get_ports { hw_led[0] }]; #IO_L24N_T3_35 Sch=led[4]
+set_property -dict { PACKAGE_PIN J5    IOSTANDARD LVCMOS33 } [get_ports { hw_led[1] }]; #IO_25_35 Sch=led[5]
+set_property -dict { PACKAGE_PIN T9    IOSTANDARD LVCMOS33 } [get_ports { hw_led[2] }]; #IO_L24P_T3_A01_D17_14 Sch=led[6]
+set_property -dict { PACKAGE_PIN T10   IOSTANDARD LVCMOS33 } [get_ports { hw_led[3] }]; #IO_L24N_T3_A00_D16_14 Sch=led[7]
 
 ## Buttons
 set_property -dict { PACKAGE_PIN D9    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[0] }]; #IO_L6N_T0_VREF_16 Sch=btn[0]
@@ -54,30 +54,31 @@ set_property -dict { PACKAGE_PIN B8    IOSTANDARD LVCMOS33 } [get_ports { hw_btn
 #set_property -dict { PACKAGE_PIN K16   IOSTANDARD LVCMOS33 } [get_ports { ja[7] }]; #IO_25_15 Sch=ja[10]
 
 ## Pmod Header JB
-set_property -dict {PACKAGE_PIN E15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_red[0]}]
-set_property -dict {PACKAGE_PIN E16 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_red[1]}]
-set_property -dict {PACKAGE_PIN D15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_red[2]}]
-set_property -dict {PACKAGE_PIN C15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_red[3]}]
-set_property -dict {PACKAGE_PIN J17 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_blue[0]}]
-set_property -dict {PACKAGE_PIN J18 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_blue[1]}]
-set_property -dict {PACKAGE_PIN K15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_blue[2]}]
-set_property -dict {PACKAGE_PIN J15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_blue[3]}]
+set_property -dict {PACKAGE_PIN E15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_red[1]}]
+set_property -dict {PACKAGE_PIN E16 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_red[2]}]
+set_property -dict {PACKAGE_PIN D15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_red[3]}]
+set_property -dict {PACKAGE_PIN C15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_red[4]}]
+set_property -dict {PACKAGE_PIN J17 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_blue[1]}]
+set_property -dict {PACKAGE_PIN J18 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_blue[2]}]
+set_property -dict {PACKAGE_PIN K15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_blue[3]}]
+set_property -dict {PACKAGE_PIN J15 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_blue[4]}]
 
 ## Pmod Header JC
-set_property -dict {PACKAGE_PIN U12 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_green[0]}]
-set_property -dict {PACKAGE_PIN V12 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_green[1]}]
-set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_green[2]}]
-set_property -dict {PACKAGE_PIN V11 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_green[3]}]
+set_property -dict {PACKAGE_PIN U12 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_green[2]}]
+set_property -dict {PACKAGE_PIN V12 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_green[3]}]
+set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_green[4]}]
+set_property -dict {PACKAGE_PIN V11 IOSTANDARD LVCMOS33} [get_ports {hw_vga_out_green[5]}]
 set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports hw_hsync]
 set_property -dict {PACKAGE_PIN V14 IOSTANDARD LVCMOS33} [get_ports hw_vsync]
 #set_property -dict { PACKAGE_PIN T13   IOSTANDARD LVCMOS33 } [get_ports { jc[6] }]; #IO_L23P_T3_A03_D19_14 Sch=jc_p[4]
 #set_property -dict { PACKAGE_PIN U13   IOSTANDARD LVCMOS33 } [get_ports { jc[7] }]; #IO_L23N_T3_A02_D18_14 Sch=jc_n[4]
 
 ## Pmod Header JD
-#set_property -dict { PACKAGE_PIN D4    IOSTANDARD LVCMOS33 } [get_ports { jd[0] }]; #IO_L11N_T1_SRCC_35 Sch=jd[1]
-#set_property -dict { PACKAGE_PIN D3    IOSTANDARD LVCMOS33 } [get_ports { jd[1] }]; #IO_L12N_T1_MRCC_35 Sch=jd[2]
-#set_property -dict { PACKAGE_PIN F4    IOSTANDARD LVCMOS33 } [get_ports { jd[2] }]; #IO_L13P_T2_MRCC_35 Sch=jd[3]
-#set_property -dict { PACKAGE_PIN F3    IOSTANDARD LVCMOS33 } [get_ports { jd[3] }]; #IO_L13N_T2_MRCC_35 Sch=jd[4]
+# just going to put these here bc these need to be connected for the pcb and they don't go anywhere on devboard
+set_property -dict { PACKAGE_PIN D4    IOSTANDARD LVCMOS33 } [get_ports { hw_vga_out_green[0] }]; #IO_L11N_T1_SRCC_35 Sch=jd[1]
+set_property -dict { PACKAGE_PIN D3    IOSTANDARD LVCMOS33 } [get_ports { hw_vga_out_green[1] }]; #IO_L12N_T1_MRCC_35 Sch=jd[2]
+set_property -dict { PACKAGE_PIN F4    IOSTANDARD LVCMOS33 } [get_ports { hw_vga_out_red[0] }]; #IO_L13P_T2_MRCC_35 Sch=jd[3]
+set_property -dict { PACKAGE_PIN F3    IOSTANDARD LVCMOS33 } [get_ports { hw_vga_out_blue[0] }]; #IO_L13N_T2_MRCC_35 Sch=jd[4]
 #set_property -dict { PACKAGE_PIN E2    IOSTANDARD LVCMOS33 } [get_ports { jd[4] }]; #IO_L14P_T2_SRCC_35 Sch=jd[7]
 #set_property -dict { PACKAGE_PIN D2    IOSTANDARD LVCMOS33 } [get_ports { jd[5] }]; #IO_L14N_T2_SRCC_35 Sch=jd[8]
 #set_property -dict { PACKAGE_PIN H2    IOSTANDARD LVCMOS33 } [get_ports { jd[6] }]; #IO_L15P_T2_DQS_35 Sch=jd[9]
