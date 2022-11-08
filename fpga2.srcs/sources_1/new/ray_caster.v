@@ -44,26 +44,34 @@ module ray_caster(
     assign output_ray = output_ray_reg;
     assign output_xpos = output_xpos_reg;
     assign read_ray_ready = read_ray_ready_reg;
-
     initial begin
         bit_map[0] = 8'b11111111;
-        bit_map[1] = 8'b10000001;
-        bit_map[2] = 8'b10101011;
+        bit_map[1] = 8'b10100101;
+        bit_map[2] = 8'b10000001;
         bit_map[3] = 8'b10000001;
-        bit_map[4] = 8'b11010101;
-        bit_map[5] = 8'b10000001;
-        bit_map[6] = 8'b10001011;
+        bit_map[4] = 8'b10000001;
+        bit_map[5] = 8'b11010101;
+        bit_map[6] = 8'b10000001;
         bit_map[7] = 8'b11111111;
 
-
-
-        //r_d_far_left[0] = 32'h0;
-        //r_d_far_left[1] = -32'h0400; 
-
-        //r_d_far_right[0] = 32'h0400;
-        //r_d_far_right[1] = 32'h0;
+        mp[0] = 32'h9333; // 2.3
+        mp[1] = 32'h9333; // 2.3
 
     end 
+
+    // Monster logic
+    reg signed [31:0] mp [1:0]; // Monster position (center)
+    wire monster_col_true;
+    wire signed [31:0] rnmrp [1:0]; // R_now-Monster-Relative-Position (r_now - mp)
+    wire signed [31:0] pmrp [1:0];
+    assign rnmrp[0] = r_now[0] - mp[0];
+    assign rnmrp[1] = r_now[1] - mp[1];
+    
+    wire signed [31:0] mx_sq;
+    wire signed [31:0] my_sq;
+    mulq18_14 mx_sq(rnmrp[0], rnmrp[0], mx_sq);
+    mulq18_14 mx_sq(rnmrp[1], rnmrp[1], my_sq);
+    assign monster_col_true =  (mx_sq + my_sq <= 32'h400); // <= 0.25^2 
 
     // Internals
     reg signed [7:0] bit_map [7:0];
@@ -150,7 +158,7 @@ module ray_caster(
         end
 
         if (ray_cast_state == 1) begin // Check collision
-                if(bit_map[r_now_floored[1] >> 14][r_now_floored[0] >> 14] == 1) begin
+                if(bit_map[r_now_floored[1] >> 14][r_now_floored[0] >> 14] == 1 || monster_col_true) begin
                     ray_cast_state <= 3;
                 end else begin 
                     ray_cast_state <= 2;
