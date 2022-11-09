@@ -26,6 +26,7 @@ module pixel_generator(
         input wire [31:0] in_ray,
         input wire [9:0] in_xpos,
         input wire [9:0] hit_type,
+        input wire signed [31:0] texture_index,
         input wire read_ray_ready,
         output wire send_new_ray,
         output wire [9:0] x, y,
@@ -38,6 +39,7 @@ module pixel_generator(
     reg [31:0] in_ray_reg = 0;
     reg signed [10:0] in_xpos_reg = 0;
     reg [9:0] hit_type_reg = 0;
+    reg signed [31:0] texture_index_reg;
     reg pix_gen_busy = 0;
     reg send_new_ray_reg = 1;
     assign data = data_reg;
@@ -56,6 +58,7 @@ module pixel_generator(
             in_ray_reg <= in_ray;
             in_xpos_reg <= in_xpos;
             hit_type_reg <= hit_type;
+            texture_index_reg <= texture_index;
             pix_gen_busy <= 1;
             send_new_ray_reg <= 1;
         end else begin
@@ -74,9 +77,9 @@ module pixel_generator(
                 data_reg <= 16'hFFFF;
             end else begin
                 if(hit_type_reg == 0) begin  
-                    data_reg <= {5'b0, 128 - in_ray_reg[17:12], 6'b0};
+                    data_reg <= {texture_index_reg[13:9], 6'd127 - in_ray_reg[17:12], 5'b0};
                 end else if(hit_type_reg == 1) begin 
-                    data_reg <= {5'b0, 6'b0 ,128 - in_ray_reg[17:12]};
+                    data_reg <= {5'b0, 6'b0 ,6'd127 - in_ray_reg[17:12]};
                 end
             end
 

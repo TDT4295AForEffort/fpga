@@ -33,6 +33,7 @@ module ray_caster(
         output wire [31:0] output_ray,
         output wire [9:0] output_hit_type,
         output wire [9:0] output_xpos,
+        output wire signed [31:0] texture_index,
         output wire read_ray_ready
     );
 
@@ -46,7 +47,9 @@ module ray_caster(
     assign output_ray = output_ray_reg;
     assign output_hit_type = output_hit_type_reg;
     assign output_xpos = output_xpos_reg;
+    assign texture_index = texture_index_reg;
     assign read_ray_ready = read_ray_ready_reg;
+
     initial begin
         bit_map[0] = 8'b11111111;
         bit_map[1] = 8'b10100101;
@@ -57,8 +60,8 @@ module ray_caster(
         bit_map[6] = 8'b10000001;
         bit_map[7] = 8'b11111111;
 
-        mp[0] = 32'h9333; // 2.3
-        mp[1] = 32'h9333; // 2.3
+        mp[0] = 32'hd333; // 3.3
+        mp[1] = 32'hd333; // 3.3
 
     end 
 
@@ -66,15 +69,15 @@ module ray_caster(
     reg signed [31:0] mp [1:0]; // Monster position (center)
     wire monster_col_true;
     wire signed [31:0] rnmrp [1:0]; // R_now-Monster-Relative-Position (r_now - mp)
-    wire signed [31:0] pmrp [1:0];
+    //wire signed [31:0] pmrp [1:0];
     assign rnmrp[0] = r_now[0] - mp[0];
     assign rnmrp[1] = r_now[1] - mp[1];
     
     wire signed [31:0] mx_sq;
     wire signed [31:0] my_sq;
-    mulq18_14 mx_sq(rnmrp[0], rnmrp[0], mx_sq);
-    mulq18_14 mx_sq(rnmrp[1], rnmrp[1], my_sq);
-    assign monster_col_true =  (mx_sq + my_sq <= 32'h400); // <= 0.25^2 
+    mulq18_14 mx_sq0(rnmrp[0], rnmrp[0], mx_sq);
+    mulq18_14 mx_sq1(rnmrp[1], rnmrp[1], my_sq);
+    assign monster_col_true =  0;//(mx_sq + my_sq <= 32'h400); // <= 0.25^2 
 
     // Internals
     reg signed [7:0] bit_map [7:0];
@@ -131,7 +134,7 @@ module ray_caster(
     wire signed [31:0] far_r_x =  b_0_product + b_2_product;
     wire signed [31:0] far_r_y =  b_1_product + b_3_product;
     
-    reg signed [31:0] texture_index = 0;
+    reg signed [31:0] texture_index_reg = 0;
     wire signed [31:0] r_now_corner[1:0];
     wire signed [31:0] delta_np_floored[1:0];
     assign r_now_corner[0] = r_now[0] - r_now_floored[0]; 
@@ -185,13 +188,13 @@ module ray_caster(
         if (ray_cast_state == 3) begin 
             // Texture index logic
             if(delta_np_floored[0] == (1 << 14) && delta_np_floored[1] == (0 << 14)) begin // From left to right
-                texture_index = (1 << 14) - r_now_corner[1];
+                texture_index_reg <= (1 << 14) - r_now_corner[1];
             end else if (delta_np_floored[0] == (0 << 14) && delta_np_floored[1] == -(1 << 14)) begin // From top to bot
-                texture_index = (1 << 14) - r_now_corner[0];
+                texture_index_reg <= (1 << 14) - r_now_corner[0];
             end else if (delta_np_floored[0] == -(1 << 14) && delta_np_floored[1] == (0 << 14)) begin // Right left
-                texture_index = r_now_corner[1];
+                texture_index_reg <= r_now_corner[1];
             end else if (delta_np_floored[0] == (0 << 14) && delta_np_floored[1] == (1 << 14)) begin // Bot up
-                texture_index = r_now_corner[0];
+                texture_index_reg <= r_now_corner[0];
             end
             abs_dx <= player_pos[0] - r_now[0] >= 0 ? player_pos[0] - r_now[0] : r_now[0] - player_pos[0];
             abs_dy <= player_pos[1] - r_now[1] >= 0 ? player_pos[1] - r_now[1] : r_now[1] - player_pos[1];
