@@ -97,6 +97,7 @@ module toplevel
     wire [31:0] raycaster_output_ray;
     wire [9:0] raycaster_output_xpos;
     wire [9:0] raycaster_output_ray_hit_type;
+    wire signed [31:0] texture_index;
     wire send_new_ray;
     wire read_ray_ready;
 
@@ -172,14 +173,22 @@ module toplevel
     mulq18_14 dp_y(player_direction[1], walk_speed, delta_pos_y);
 
     reg [31:0] turn_counter = 0;
+    reg signed [31:0] new_pd_l_x_reg = 0;
+    reg signed [31:0] new_pd_l_y_reg = 0;
+    reg signed [31:0] new_pd_r_x_reg = 0;
+    reg signed [31:0] new_pd_r_y_reg = 0;
     always @(posedge clk100) begin 
+        new_pd_l_x_reg <= new_pd_l_x;
+        new_pd_l_y_reg <= new_pd_l_y;
+        new_pd_r_x_reg <= new_pd_r_x;
+        new_pd_r_y_reg <= new_pd_r_y;
         if(turn_counter == 10000000) begin
             if(hw_btn[3]) begin //left turn
-                player_direction[0] <= new_pd_l_x;
-                player_direction[1] <= new_pd_l_y;
+                player_direction[0] <= new_pd_l_x_reg;
+                player_direction[1] <= new_pd_l_y_reg;
             end else if (hw_btn[0]) begin //right turn
-                player_direction[0] <= new_pd_r_x;
-                player_direction[1] <= new_pd_r_y;
+                player_direction[0] <= new_pd_r_x_reg;
+                player_direction[1] <= new_pd_r_y_reg;
             end else if (hw_btn[1]) begin // Forward 
                 player_pos[0] <= player_pos[0] + delta_pos_x;
                 player_pos[1] <= player_pos[1] + delta_pos_y;
@@ -200,6 +209,7 @@ module toplevel
         .output_xpos(raycaster_output_xpos),
         .output_hit_type(raycaster_output_ray_hit_type),
         .read_ray_ready(read_ray_ready),
+        .texture_index(texture_index),
         .player_pos_x(player_pos[0]),
         .player_pos_y(player_pos[1]),
         .player_direction_x(player_direction[0]),
@@ -209,7 +219,8 @@ module toplevel
         .clk100(clk100), .fourstate(clk100_4state),
         .in_ray(raycaster_output_ray),
         .in_xpos(raycaster_output_xpos),
-        .hit_type(raycaster_output_ray_hit_type),   
+        .hit_type(raycaster_output_ray_hit_type),
+        .texture_index(texture_index),   
         .read_ray_ready(read_ray_ready),
         .send_new_ray(send_new_ray),
         .x(pixwrite_x), .y(pixwrite_y), .data(pixwrite_data), .pixwrite_enable(pixwrite_enable)
