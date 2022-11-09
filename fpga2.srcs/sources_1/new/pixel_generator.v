@@ -25,6 +25,7 @@ module pixel_generator(
         input wire [1:0] fourstate,
         input wire [31:0] in_ray,
         input wire [9:0] in_xpos,
+        input wire [9:0] hit_type,
         input wire read_ray_ready,
         output wire send_new_ray,
         output wire [9:0] x, y,
@@ -36,6 +37,7 @@ module pixel_generator(
     reg signed [31:0] bar_border_from_center = 0;
     reg [31:0] in_ray_reg = 0;
     reg signed [10:0] in_xpos_reg = 0;
+    reg [9:0] hit_type_reg = 0;
     reg pix_gen_busy = 0;
     reg send_new_ray_reg = 1;
     assign data = data_reg;
@@ -53,6 +55,7 @@ module pixel_generator(
         if(pix_gen_busy == 0 && read_ray_ready == 1) begin
             in_ray_reg <= in_ray;
             in_xpos_reg <= in_xpos;
+            hit_type_reg <= hit_type;
             pix_gen_busy <= 1;
             send_new_ray_reg <= 1;
         end else begin
@@ -69,9 +72,12 @@ module pixel_generator(
         if (fourstate == 0 && pix_gen_busy == 1) begin
             if( (ypos > (240 + bar_border_from_center[31:15])) || (ypos < (240 - bar_border_from_center[31:15])) ) begin
                 data_reg <= 16'hFFFF;
-            end else begin 
-                data_reg <= {5'b0, 128 - in_ray_reg[17:12], 6'b0};
-                //data_reg = {5'b00111, 6'b0, in_ray_reg[14:11]};
+            end else begin
+                if(hit_type_reg == 0) begin  
+                    data_reg <= {5'b0, 128 - in_ray_reg[17:12], 6'b0};
+                end else if(hit_type_reg == 1) begin 
+                    data_reg <= {5'b0, 6'b0 ,128 - in_ray_reg[17:12]};
+                end
             end
 
             if (ypos+1 >= 480) begin

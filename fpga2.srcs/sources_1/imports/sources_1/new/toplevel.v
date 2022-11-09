@@ -96,6 +96,7 @@ module toplevel
     // frame buffer write test
     wire [31:0] raycaster_output_ray;
     wire [9:0] raycaster_output_xpos;
+    wire [9:0] raycaster_output_ray_hit_type;
     wire send_new_ray;
     wire read_ray_ready;
 
@@ -197,9 +198,8 @@ module toplevel
         .send_new_ray(send_new_ray),
         .output_ray(raycaster_output_ray),
         .output_xpos(raycaster_output_xpos),
+        .output_hit_type(raycaster_output_ray_hit_type),
         .read_ray_ready(read_ray_ready),
-        // .player_pos_x(player_pos_x[63:32]),
-        // .player_pos_y(player_pos_y[63:32]),
         .player_pos_x(player_pos[0]),
         .player_pos_y(player_pos[1]),
         .player_direction_x(player_direction[0]),
@@ -209,6 +209,7 @@ module toplevel
         .clk100(clk100), .fourstate(clk100_4state),
         .in_ray(raycaster_output_ray),
         .in_xpos(raycaster_output_xpos),
+        .hit_type(raycaster_output_ray_hit_type),   
         .read_ray_ready(read_ray_ready),
         .send_new_ray(send_new_ray),
         .x(pixwrite_x), .y(pixwrite_y), .data(pixwrite_data), .pixwrite_enable(pixwrite_enable)

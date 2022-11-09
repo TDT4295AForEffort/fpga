@@ -31,6 +31,7 @@ module ray_caster(
         input wire signed [31:0] player_direction_y,
 
         output wire [31:0] output_ray,
+        output wire [9:0] output_hit_type,
         output wire [9:0] output_xpos,
         output wire read_ray_ready
     );
@@ -38,10 +39,12 @@ module ray_caster(
     // Output
     reg [9:0] xpos = 0; 
     reg signed [31:0] output_ray_reg = 0;
+    reg [9:0] output_hit_type_reg = 0;
     reg [9:0] output_xpos_reg = 0;
     reg read_ray_ready_reg = 0;
 
     assign output_ray = output_ray_reg;
+    assign output_hit_type = output_hit_type_reg;
     assign output_xpos = output_xpos_reg;
     assign read_ray_ready = read_ray_ready_reg;
     initial begin
@@ -76,18 +79,14 @@ module ray_caster(
     // Internals
     reg signed [7:0] bit_map [7:0];
     reg signed [31:0] player_pos [1:0]; // [x, y]
-    //reg signed [31:0] hfov = 90 << 14;
     reg signed [31:0] r_now [1:0];
     reg signed [31:0] r_prev [1:0];
     reg signed [31:0] r_d_far_left [1:0];
     reg signed [31:0] r_d_far_right [1:0];
     reg signed [31:0] r_d [1:0];
-    //reg signed [31:0] r_d_temp [1:0];
-    //reg signed [31:0] r_d_temp_change [1:0];
     reg [9:0] ray_cast_state = 0; 
     reg signed [31:0] r_now_floored [1:0];
     reg signed [31:0] r_prev_floored [1:0];
-    //reg signed [31:0] player_positions [19:0];
 
     reg signed [31:0] abs_dx = 0;
     reg signed [31:0] abs_dy = 0;
@@ -133,6 +132,12 @@ module ray_caster(
     wire signed [31:0] far_r_y =  b_1_product + b_3_product;
     
     reg signed [31:0] texture_index = 0;
+    wire signed [31:0] r_now_corner[1:0];
+    wire signed [31:0] delta_np_floored[1:0];
+    assign r_now_corner[0] = r_now[0] - r_now_floored[0]; 
+    assign r_now_corner[1] = r_now[1] - r_now_floored[1]; 
+    assign delta_np_floored[0] = r_now_floored[0] - r_prev_floored[0];
+    assign delta_np_floored[1] = r_now_floored[1] - r_prev_floored[1];
 
     
     always @(posedge clk100) begin 
@@ -178,6 +183,16 @@ module ray_caster(
         end
 
         if (ray_cast_state == 3) begin 
+            // Texture index logic
+            if(delta_np_floored[0] == (1 << 14) && delta_np_floored[1] == (0 << 14)) begin // From left to right
+                texture_index = (1 << 14) - r_now_corner[1];
+            end else if (delta_np_floored[0] == (0 << 14) && delta_np_floored[1] == -(1 << 14)) begin // From top to bot
+                texture_index = (1 << 14) - r_now_corner[0];
+            end else if (delta_np_floored[0] == -(1 << 14) && delta_np_floored[1] == (0 << 14)) begin // Right left
+                texture_index = r_now_corner[1];
+            end else if (delta_np_floored[0] == (0 << 14) && delta_np_floored[1] == (1 << 14)) begin // Bot up
+                texture_index = r_now_corner[0];
+            end
             abs_dx <= player_pos[0] - r_now[0] >= 0 ? player_pos[0] - r_now[0] : r_now[0] - player_pos[0];
             abs_dy <= player_pos[1] - r_now[1] >= 0 ? player_pos[1] - r_now[1] : r_now[1] - player_pos[1];
             ray_cast_state <= 4;
@@ -188,6 +203,11 @@ module ray_caster(
             //Output
             output_ray_reg <= abs_dx < abs_dy ? (32'h1a3d*abs_dx >> 14) + (32'h3c3d*abs_dy >> 14) : (32'h1a3d*abs_dy >> 14) + (32'h3c3d*abs_dx >> 14); // Magic number = 0.41, 0.941246
             output_xpos_reg <= xpos;
+            if(monster_col_true) begin 
+                output_hit_type_reg <= 1;
+            end else begin 
+                output_hit_type_reg <= 0;
+            end
             read_ray_ready_reg <= 1;
             
             // reset
