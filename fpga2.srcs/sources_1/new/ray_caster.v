@@ -67,7 +67,7 @@ module ray_caster(
 
     // Monster logic
     reg signed [31:0] mp [1:0]; // Monster position (center)
-    wire monster_col_true;
+    reg monster_col_true;
     wire signed [31:0] rnmrp [1:0]; // R_now-Monster-Relative-Position (r_now - mp)
     //wire signed [31:0] pmrp [1:0];
     assign rnmrp[0] = r_now[0] - mp[0];
@@ -77,7 +77,6 @@ module ray_caster(
     wire signed [31:0] my_sq;
     mulq18_14 mx_sq0(rnmrp[0], rnmrp[0], mx_sq);
     mulq18_14 mx_sq1(rnmrp[1], rnmrp[1], my_sq);
-    assign monster_col_true =  0;//(mx_sq + my_sq <= 32'h400); // <= 0.25^2 
 
     // Internals
     reg signed [7:0] bit_map [7:0];
@@ -182,6 +181,7 @@ module ray_caster(
             r_now_floored[1] <= (r_now[1] + r_d[1]) & 32'b11111111111111111100000000000000;
             r_prev_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
             r_prev_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
+            monster_col_true <= (mx_sq + my_sq <= 32'h400); // <= 0.25^2 
             ray_cast_state <= 1;
         end
 
