@@ -40,7 +40,7 @@ module spite(
     // assign map_state = map_state_out_reg;
     // assign block_tex_ids = block_tex_out_reg;
 
-    always @(posedge clk) begin
+    always @(posedge clk)
     if (spi_byte_ready)
         if (byte_count < 2) begin // we're at the start of the game state
             byte_count <= byte_count + 1; // count the byte
@@ -72,16 +72,16 @@ module spite(
         else if (byte_count < 16) begin
             byte_count <= byte_count + 1;
             if (byte_count == 16)
-                x_pos_out_reg <= x_pos_im_reg;
+                y_pos_out_reg <= y_pos_im_reg;
             else
-                x_pos_im_reg[byte_count % 4] <= byte_in;
+                y_pos_im_reg[byte_count % 4] <= byte_in;
         end
         else if (byte_count < 20) begin
             byte_count <= byte_count + 1;
             if (byte_count == 20)
-                x_dir_out_reg <= x_dir_im_reg;
+                y_dir_out_reg <= y_dir_im_reg;
             else
-                x_dir_im_reg[byte_count % 4] <= byte_in;
+                y_dir_im_reg[byte_count % 4] <= byte_in;
         end
         else if (byte_count < 4116) begin
             byte_count <= byte_count + 1;
@@ -98,7 +98,6 @@ module spite(
                 block_tex_im_reg[(byte_count - 4116) % 64][(byte_count - 4116) >> 6] <= byte_in;
         end
         else
-            byte_count <= 0;  
-        end
+            byte_count <= 0;
 
 endmodule
