@@ -52,11 +52,11 @@ module ray_caster(
 
     initial begin
         bit_map[0] = 8'b11111111;
-        bit_map[1] = 8'b10100101;
+        bit_map[1] = 8'b10000001;
         bit_map[2] = 8'b10000001;
         bit_map[3] = 8'b10000001;
         bit_map[4] = 8'b10000001;
-        bit_map[5] = 8'b11010101;
+        bit_map[5] = 8'b10000001;
         bit_map[6] = 8'b10000001;
         bit_map[7] = 8'b11111111;
 
