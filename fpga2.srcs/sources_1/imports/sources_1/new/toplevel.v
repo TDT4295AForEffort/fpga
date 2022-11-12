@@ -42,6 +42,7 @@ module toplevel
 
 		//inout wire [7:0] hw_gpio,
 		output wire [3:0] hw_led,
+		output wire [7:0] hw_rgb,
 
 		input wire [3:0] hw_btn // for demo, todo remove?
 	);
@@ -58,15 +59,16 @@ module toplevel
         clk_wiz_0 clkwiz(.clk_in1(hw_clk), .clk_out1(clk100));
     `endif
 
-	
-    assign hw_led[0] = 0;
-	assign hw_led[1] = 1;
 	assign hw_led[2] = clk100;
-	assign hw_led[3] = 0;
 	
 	wire spi_byte_ready;
+	assign hw_led[3] = spi_byte_ready;
 	wire [7:0] spi_out;
+	assign hw_rgb = spi_out;
+	wire [31:0] x_pos;
+	wire [31:0] y_pos;
 	spi_slave slav (.clk(clk100), .sclk(hw_sclk), .miso(hw_miso), .mosi(hw_mosi), .ss(hw_ss), .byte_ready(spi_byte_ready), .out(spi_out));
+	spite spit (.clk(clk100), .spi_byte_ready(spi_byte_ready), .byte_in(spi_out), .x_pos(x_pos), .y_pos(y_pos));
 
     // state register for 4-state operations in sync with 25MHz VGA out
 	reg [1:0] clk100_4state = 0;
@@ -210,8 +212,8 @@ module toplevel
         .output_hit_type(raycaster_output_ray_hit_type),
         .read_ray_ready(read_ray_ready),
         .texture_index(texture_index),
-        .player_pos_x(player_pos[0]),
-        .player_pos_y(player_pos[1]),
+        .player_pos_x(x_pos + 2 << 14),
+        .player_pos_y(y_pos + 2 << 14),
         .player_direction_x(player_direction[0]),
         .player_direction_y(player_direction[1])
     );
