@@ -61,14 +61,55 @@ module toplevel
 
 	assign hw_led[2] = clk100;
 	
-	wire spi_byte_ready;
-	assign hw_led[3] = spi_byte_ready;
+    // spi wires
+	wire spi_byte_ready;    // let's spite know that we've received a byte
 	wire [7:0] spi_out;
-	assign hw_rgb = spi_out;
 	wire [31:0] x_pos;
 	wire [31:0] y_pos;
-	spi_slave slav (.clk(clk100), .sclk(hw_sclk), .miso(hw_miso), .mosi(hw_mosi), .ss(hw_ss), .byte_ready(spi_byte_ready), .out(spi_out));
-	spite spit (.clk(clk100), .spi_byte_ready(spi_byte_ready), .byte_in(spi_out), .x_pos(x_pos), .y_pos(y_pos));
+	wire ss_fall;           // propagate ss falling edge to spite so that it can reset its byte count
+
+    // TODO: remove. these two are just for debugging/verifying that we receive the correct data
+	wire [13:0] byte_count;
+	wire [15:0] pack_size;
+
+    `ifdef ISDEV
+	    assign hw_rgb = spi_out; // flash rgb LEDs with spi output
+    `endif
+
+    /* ila for debugging spi -> spite interaction, uncomment when you need it
+	ila_0 ila (
+	   .clk(clk100),
+	   .probe0(spi_byte_ready),
+	   .probe1(spi_out),
+	   .probe2(x_pos),
+	   .probe3(y_pos),
+	   .probe4(ss_fall),
+	   .probe5(byte_count),
+	   .probe6(pack_size)
+    );
+    */
+
+    spi_slave slav (
+        .clk(clk100),
+        .sclk(hw_sclk),
+        .miso(hw_miso),
+        .mosi(hw_mosi),
+        .ss(hw_ss),
+        .byte_ready(spi_byte_ready),
+        .out(spi_out),
+        .ss_fall(ss_fall)
+    );
+
+	spite spit (
+	   .clk(clk100),
+	   .spi_byte_ready(spi_byte_ready),
+	   .ss_fall(ss_fall),
+	   .byte_in(spi_out),
+	   .x_pos(x_pos),
+	   .y_pos(y_pos),
+	   .count(byte_count),   // TODO: remove unless we find a use for it
+	   .pack_size(pack_size) // TODO: same as above
+	);
 
     // state register for 4-state operations in sync with 25MHz VGA out
 	reg [1:0] clk100_4state = 0;
@@ -262,4 +303,4 @@ module toplevel
     // todo implement external sram access
     blk_mem_gen_0 ram(.clka(clk100), .addra(ram_addr[16:0]), .douta(ram_data_out), .dina(ram_data_in), .wea(ram_write));
 
-endmodule : toplevel
+endmodule
