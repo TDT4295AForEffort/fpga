@@ -8,13 +8,16 @@ module spi_slave(
     input  wire mosi,
     output wire miso,
     input  wire ss,
+    output wire ss_fall,
     output wire byte_ready,
     output wire [7:0] out
 );
 
 // intermediate register for output
 reg [7:0] outr = 0;
-assign out = outr;
+
+// it seems mcu is sending LSB first; reverse
+assign out = {outr[0], outr[1], outr[2], outr[3], outr[4], outr[5], outr[6], outr[7]};
 
 // 3-bit shift register for syncing sclk to FPGA clock
 reg [2:0] sclkr = 0;
@@ -30,9 +33,10 @@ reg [2:0] ssr = 1;
 always @(posedge clk)
     ssr <= {ssr[1:0], ss};
 
-wire ss_active = ~ssr[1];                  // SS is active low
+wire ss_active = ~ssr[1];             // SS is active low
 wire ss_falling = (ssr[2:1]==2'b10);  // message starts at falling edge
-wire ss_rising = (ssr[2:1]==2'b01);    // message stops at rising edge
+assign ss_fall = ss_falling;
+wire ss_rising = (ssr[2:1]==2'b01);   // message stops at rising edge
 
 // and for mosi
 reg [1:0] mosir = 0;
@@ -44,13 +48,10 @@ wire mosi_data = mosir[1];
 // 3-bit counter to count 8-bit SPI
 reg [2:0] bitcnt = 0;
 
-reg byte_received = 0;              // set to high when we've got a byte
-reg byte_received_fall = 0;
-reg byte_received_delay = 0;
+reg byte_received = 0; // set to high when we've got a byte
+reg byte_received_last_cycle = 0;
 reg [7:0] byte_data_received = 0;
-always @(negedge clk) byte_received_fall <= byte_received;
-always @(negedge clk) byte_received_delay <= byte_received_fall;
-assign byte_ready = (byte_received_fall && ~byte_received_delay);
+assign byte_ready = byte_received_last_cycle;
 
 always @(posedge clk)
 begin
@@ -73,7 +74,12 @@ end
 always @(posedge clk) byte_received <= ss_active && sclk_risingedge && (bitcnt==3'd7);
 
 // stick the byte into the out register
-always @(posedge clk) if(byte_received) outr <= byte_data_received;
+always @(posedge clk)
+if(byte_received) begin
+    outr <= byte_data_received;
+    byte_received_last_cycle <= 1;
+    end
+    else byte_received_last_cycle <= 0;
 
 reg [7:0] byte_data_sent = 0;
 
@@ -91,7 +97,7 @@ begin
     if(bitcnt==3'b000)
       byte_data_sent <= 8'h00;  // after that, we send 0s
     else
-      byte_data_sent <= {byte_data_sent[6:0],0};
+      byte_data_sent <= {byte_data_sent[6:0],1'b0};
   end
 end
 
