@@ -42,6 +42,7 @@ module toplevel
 
 		//inout wire [7:0] hw_gpio,
 		output wire [3:0] hw_led,
+		output wire [7:0] hw_rgb,
 
 		input wire [3:0] hw_btn // for demo, todo remove?
 	);
@@ -58,15 +59,61 @@ module toplevel
         clk_wiz_0 clkwiz(.clk_in1(hw_clk), .clk_out1(clk100));
     `endif
 
-	
-    assign hw_led[0] = 0;
-	assign hw_led[1] = 1;
 	assign hw_led[2] = clk100;
-	assign hw_led[3] = 0;
 	
-	wire spi_byte_ready;
+    // spi wires
+	wire spi_byte_ready;    // let's spite know that we've received a byte
 	wire [7:0] spi_out;
-	spi_slave slav (.clk(clk100), .sclk(hw_sclk), .miso(hw_miso), .mosi(hw_mosi), .ss(hw_ss), .byte_ready(spi_byte_ready), .out(spi_out));
+	wire [31:0] x_pos;
+	wire [31:0] y_pos;
+	wire [31:0] x_dir;
+	wire [31:0] y_dir;
+	wire ss_fall;           // propagate ss falling edge to spite so that it can reset its byte count
+
+    // TODO: remove. these two are just for debugging/verifying that we receive the correct data
+	wire [13:0] byte_count;
+	wire [15:0] pack_size;
+
+    `ifdef ISDEV
+	    assign hw_rgb = spi_out; // flash rgb LEDs with spi output
+    `endif
+
+    /* ila for debugging spi -> spite interaction, uncomment when you need it
+	ila_0 ila (
+	   .clk(clk100),
+	   .probe0(spi_byte_ready),
+	   .probe1(spi_out),
+	   .probe2(x_pos),
+	   .probe3(y_pos),
+	   .probe4(ss_fall),
+	   .probe5(byte_count),
+	   .probe6(pack_size)
+    );
+    */
+
+    spi_slave slav (
+        .clk(clk100),
+        .sclk(hw_sclk),
+        .miso(hw_miso),
+        .mosi(hw_mosi),
+        .ss(hw_ss),
+        .byte_ready(spi_byte_ready),
+        .out(spi_out),
+        .ss_fall(ss_fall)
+    );
+
+	spite spit (
+	   .clk(clk100),
+	   .spi_byte_ready(spi_byte_ready),
+	   .ss_fall(ss_fall),
+	   .byte_in(spi_out),
+	   .x_pos(x_pos),
+	   .y_pos(y_pos),
+	   .x_dir(x_dir),
+	   .y_dir(y_dir),
+	   .count(byte_count),   // TODO: remove unless we find a use for it
+	   .pack_size(pack_size) // TODO: same as above
+	);
 
     // state register for 4-state operations in sync with 25MHz VGA out
 	reg [1:0] clk100_4state = 0;
@@ -210,10 +257,10 @@ module toplevel
         .output_hit_type(raycaster_output_ray_hit_type),
         .read_ray_ready(read_ray_ready),
         .texture_index(texture_index),
-        .player_pos_x(player_pos[0]),
-        .player_pos_y(player_pos[1]),
-        .player_direction_x(player_direction[0]),
-        .player_direction_y(player_direction[1])
+        .player_pos_x(x_pos),
+        .player_pos_y(y_pos),
+        .player_direction_x(x_dir),
+        .player_direction_y(y_dir)
     );
     pixel_generator pixels(
         .clk100(clk100), .fourstate(clk100_4state),
@@ -260,4 +307,4 @@ module toplevel
     // todo implement external sram access
     blk_mem_gen_0 ram(.clka(clk100), .addra(ram_addr[16:0]), .douta(ram_data_out), .dina(ram_data_in), .wea(ram_write));
 
-endmodule : toplevel
+endmodule
