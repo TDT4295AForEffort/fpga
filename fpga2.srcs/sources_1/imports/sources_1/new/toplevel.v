@@ -66,6 +66,8 @@ module toplevel
 	wire [7:0] spi_out;
 	wire [31:0] x_pos;
 	wire [31:0] y_pos;
+	wire [31:0] x_dir;
+	wire [31:0] y_dir;
 	wire ss_fall;           // propagate ss falling edge to spite so that it can reset its byte count
 
     // TODO: remove. these two are just for debugging/verifying that we receive the correct data
@@ -107,6 +109,8 @@ module toplevel
 	   .byte_in(spi_out),
 	   .x_pos(x_pos),
 	   .y_pos(y_pos),
+	   .x_dir(x_dir),
+	   .y_dir(y_dir),
 	   .count(byte_count),   // TODO: remove unless we find a use for it
 	   .pack_size(pack_size) // TODO: same as above
 	);
@@ -253,10 +257,10 @@ module toplevel
         .output_hit_type(raycaster_output_ray_hit_type),
         .read_ray_ready(read_ray_ready),
         .texture_index(texture_index),
-        .player_pos_x(x_pos + 2 << 14),
-        .player_pos_y(y_pos + 2 << 14),
-        .player_direction_x(player_direction[0]),
-        .player_direction_y(player_direction[1])
+        .player_pos_x(x_pos),
+        .player_pos_y(y_pos),
+        .player_direction_x(x_dir),
+        .player_direction_y(y_dir)
     );
     pixel_generator pixels(
         .clk100(clk100), .fourstate(clk100_4state),
