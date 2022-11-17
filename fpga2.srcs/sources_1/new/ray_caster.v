@@ -29,7 +29,13 @@ module ray_caster(
         input wire [31:0] player_pos_y,
         input wire signed [31:0] player_direction_x,
         input wire signed [31:0] player_direction_y,
+        input wire [255:0] world_map,
 
+        // input wire signed [31:0] far_l_x;
+        // input wire signed [31:0] far_l_y;
+        // input wire signed [31:0] far_r_x;
+        // input wire signed [31:0] far_r_y;
+    
         output wire [31:0] output_ray,
         output wire [9:0] output_hit_type,
         output wire [9:0] output_xpos,
@@ -51,19 +57,64 @@ module ray_caster(
     assign read_ray_ready = read_ray_ready_reg;
 
     initial begin
-        bit_map[0] = 8'b11111111;
-        bit_map[1] = 8'b10000001;
-        bit_map[2] = 8'b10000001;
-        bit_map[3] = 8'b10000001;
-        bit_map[4] = 8'b10000001;
-        bit_map[5] = 8'b10000001;
-        bit_map[6] = 8'b10000001;
-        bit_map[7] = 8'b11111111;
+         bit_map[0] = 16'b1111111111111111;
+         bit_map[1] = 16'b1000000000000001;
+         bit_map[2] = 16'b0010000000100001;
+         bit_map[3] = 16'b1000000000000001;
+         bit_map[4] = 16'b1000001000000001;
+         bit_map[5] = 16'b1000000000000001;
+         bit_map[6] = 16'b1000000000000001;
+         bit_map[7] = 16'b1001000000010001;
+         bit_map[8] = 16'b1000000000000001;
+         bit_map[9] = 16'b1000000000000001;
+        bit_map[10] = 16'b1000001000000001;
+        bit_map[11] = 16'b1000000000000001;
+        bit_map[12] = 16'b1000000000000001;
+        bit_map[13] = 16'b1000000000010001;
+        bit_map[14] = 16'b1000000000000001;
+        bit_map[15] = 16'b1111111111111111;
 
         mp[0] = 32'hd333; // 3.3
         mp[1] = 32'hd333; // 3.3
+    end
 
-    end 
+
+    // Map
+    wire [15:0] bit_map_r00; 
+    wire [15:0] bit_map_r01; 
+    wire [15:0] bit_map_r02; 
+    wire [15:0] bit_map_r03; 
+    wire [15:0] bit_map_r04; 
+    wire [15:0] bit_map_r05; 
+    wire [15:0] bit_map_r06; 
+    wire [15:0] bit_map_r07; 
+    wire [15:0] bit_map_r08; 
+    wire [15:0] bit_map_r09; 
+    wire [15:0] bit_map_r10; 
+    wire [15:0] bit_map_r11; 
+    wire [15:0] bit_map_r12; 
+    wire [15:0] bit_map_r13; 
+    wire [15:0] bit_map_r14; 
+    wire [15:0] bit_map_r15; 
+    
+    assign {
+        bit_map_r00, 
+        bit_map_r01, 
+        bit_map_r02, 
+        bit_map_r03, 
+        bit_map_r04, 
+        bit_map_r05, 
+        bit_map_r06, 
+        bit_map_r07, 
+        bit_map_r08, 
+        bit_map_r09, 
+        bit_map_r10, 
+        bit_map_r11, 
+        bit_map_r12, 
+        bit_map_r13, 
+        bit_map_r14, 
+        bit_map_r15
+    } = world_map;
 
     // Monster logic
     reg signed [31:0] mp [1:0]; // Monster position (center)
@@ -79,7 +130,7 @@ module ray_caster(
     mulq18_14 mx_sq1(rnmrp[1], rnmrp[1], my_sq);
 
     // Internals
-    reg signed [7:0] bit_map [7:0];
+    reg signed [15:0] bit_map [15:0];
     reg signed [31:0] player_pos [1:0]; // [x, y]
     reg signed [31:0] r_now [1:0];
     reg signed [31:0] r_prev [1:0];
@@ -129,7 +180,6 @@ module ray_caster(
 
     wire signed [31:0] far_l_x =  a_0_product + a_2_product;
     wire signed [31:0] far_l_y =  a_1_product + a_3_product;
-
     wire signed [31:0] far_r_x =  b_0_product + b_2_product;
     wire signed [31:0] far_r_y =  b_1_product + b_3_product;
     
@@ -140,7 +190,40 @@ module ray_caster(
     assign r_now_corner[1] = r_now[1] - r_now_floored[1]; 
     assign delta_np_floored[0] = r_now_floored[0] - r_prev_floored[0];
     assign delta_np_floored[1] = r_now_floored[1] - r_prev_floored[1];
+    wire signed [31:0] r_now_floored_x_int = r_now[0] >> 14;
+    wire signed [31:0] r_now_floored_y_int = r_now[1] >> 14;
+    wire [31:0] block_address = 7 + (r_now_floored_x_int << 4) + (r_now_floored_y_int << 8); // 7 + x*16 + y*16*16
 
+
+    //ila for debugging spi -> spite interaction, uncomment when you need it
+	// ila_0 ila (
+	//    .clk(clk100),
+	//    .probe0(
+    //     {
+    //         bit_map[0],
+    //         bit_map[1],
+    //         bit_map[2],
+    //         bit_map[3],
+    //         bit_map[4],
+    //         bit_map[5],
+    //         bit_map[6],
+    //         bit_map[7],
+    //         bit_map[8],
+    //         bit_map[9],
+    //         bit_map[10],
+    //         bit_map[11],
+    //         bit_map[12],
+    //         bit_map[13],
+    //         bit_map[14],
+    //         bit_map[15]
+    //     }
+    //    )
+	// //    .probe0(x_pos),
+	// //    .probe1(y_pos),
+	// //    .probe2(x_dir),
+	// //    .probe3(y_dir)
+	//    //.probe6(pack_size)
+    // );
     
     always @(posedge clk100) begin 
 
@@ -152,6 +235,23 @@ module ray_caster(
         r_d_far_right[0] <= far_r_x;
         r_d_far_right[1] <= far_r_y;
 
+        bit_map[0] <= bit_map_r00;
+        bit_map[1] <= bit_map_r01;
+        bit_map[2] <= bit_map_r02;
+        bit_map[3] <= bit_map_r03;
+        bit_map[4] <= bit_map_r04;
+        bit_map[5] <= bit_map_r05;
+        bit_map[6] <= bit_map_r06;
+        bit_map[7] <= bit_map_r07;
+        bit_map[8] <= bit_map_r08;
+        bit_map[9] <= bit_map_r09;
+        bit_map[10] <= bit_map_r10;
+        bit_map[11] <= bit_map_r11;
+        bit_map[12] <= bit_map_r12;
+        bit_map[13] <= bit_map_r13;
+        bit_map[14] <= bit_map_r14;
+        bit_map[15] <= bit_map_r15;
+
         if (ray_cast_state == 0) begin // init stuff
             r_prev[0] <= player_pos[0]; // init prev
             r_prev[1] <= player_pos[1];
@@ -159,7 +259,7 @@ module ray_caster(
             r_now[1] <= player_pos[1];
             r_d[0] <= r_d_far_left[0] + r_d0_init; // init r_d
             r_d[1] <= r_d_far_left[1] + r_d1_init;
-            if(r_d[0] != 0 && r_d[1] != 0) begin
+            if(r_d[0] != 0 || r_d[1] != 0) begin
                 ray_cast_state <= 2;
             end
         end

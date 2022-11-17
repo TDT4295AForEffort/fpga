@@ -14,6 +14,9 @@ def convert_to_fixed_point(number, int_bit_size=18, fractional_bit_size=14):
         num = num[1:]
     return "{}{}'h".format(sign, int_bit_size+fractional_bit_size) + num[2:]
 
+def fixed_to_decimal(val, base=16):
+    s = int(val, base=base)
+    return s*2**(-14)
 
 
 board = [
@@ -81,8 +84,54 @@ angle = (5/180)*pi
 # print(convert_to_fixed_point(-sin(-angle)*factor))
 # print(convert_to_fixed_point(cos(-angle)*factor))
 
-print(convert_to_fixed_point(0.1))
+#print(convert_to_fixed_point(0.1))
+# print(fixed_to_decimal('0xd0b6'))
+# print(fixed_to_decimal('0xef51'))
 
 # Magic constant: 1.327
 
+# for i in range(16):
+#     print("[{} : {}]".format(4095 - 16*i, 4096 - 16*(i+1)))
 
+# def print_bit_map(bitmap):
+#     e = 0
+#     for i in bitmap[2:]:
+#         print("{:>4}".format(bin(int("0x" + i, base=16))[2:]), end="")
+#         if(e == 3):
+#             print("\n", end="")
+#             e = 0
+#         else:
+#             e += 1
+
+# map_top = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+# map_bot = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+# numbr2 = "0xfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfc" # High end of world_map
+
+# number = "0xffff80018001800180018001800180018001800180018001800180018001ffff"
+# # 1111111111111111
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1000000000000001
+# # 1111111111111111
+# emmas_map0 = "0xfefe00020002000200020002000200020002000200020002000200020002fefe"
+# emmas_map1 = "0xfefee0001800060000c00030000c0002800060001800060000c00030000c000280007efe"
+# emmas_map2 = "0xffff80018001800180018001800180018001800180018001800180018001ffff"
+# active = emmas_map2
+# print(len(active))
+# print_bit_map(active)
+
+print(fixed_to_decimal("0x00024ce2"))
+print(fixed_to_decimal("0x00028010"))
+print(fixed_to_decimal("0x00004000"))
+print(fixed_to_decimal("0x00000000"))
