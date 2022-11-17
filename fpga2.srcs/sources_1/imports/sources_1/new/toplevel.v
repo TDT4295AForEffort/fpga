@@ -68,6 +68,7 @@ module toplevel
 	wire [31:0] y_pos;
 	wire [31:0] x_dir;
 	wire [31:0] y_dir;
+    wire [4095:0] world_map;
 	wire ss_fall;           // propagate ss falling edge to spite so that it can reset its byte count
 
     // TODO: remove. these two are just for debugging/verifying that we receive the correct data
@@ -78,18 +79,17 @@ module toplevel
 	    assign hw_rgb = spi_out; // flash rgb LEDs with spi output
     `endif
 
-    /* ila for debugging spi -> spite interaction, uncomment when you need it
-	ila_0 ila (
-	   .clk(clk100),
-	   .probe0(spi_byte_ready),
-	   .probe1(spi_out),
-	   .probe2(x_pos),
-	   .probe3(y_pos),
-	   .probe4(ss_fall),
-	   .probe5(byte_count),
-	   .probe6(pack_size)
-    );
-    */
+    //ila for debugging spi -> spite interaction, uncomment when you need it
+	// ila_0 ila (
+	//    .clk(clk100),
+	//    .probe0(world_map[4095:3840])
+	// //    .probe0(x_pos),
+	// //    .probe1(y_pos),
+	// //    .probe2(x_dir),
+	// //    .probe3(y_dir)
+	//    //.probe6(pack_size)
+    // );
+    
 
     spi_slave slav (
         .clk(clk100),
@@ -111,6 +111,7 @@ module toplevel
 	   .y_pos(y_pos),
 	   .x_dir(x_dir),
 	   .y_dir(y_dir),
+       .map_arr(world_map[4095:0]),
 	   .count(byte_count),   // TODO: remove unless we find a use for it
 	   .pack_size(pack_size) // TODO: same as above
 	);
@@ -172,82 +173,83 @@ module toplevel
     // end
     // endtodo
     
-    reg signed [31:0] player_direction [1:0]; // [x,y] normalized
-    reg signed [31:0] player_pos [1:0]; // [x,y] normalized
-    initial begin
-        player_direction[0] = 32'h2d41; // cos(pi/4)
-        player_direction[1] = 32'h2d41; // sin(pi/4)
-        player_pos[0] = 32'h8000; // 2
-        player_pos[1] = 32'h10000; // 4
-    end
+    //! commented out to get blockram
+    // reg signed [31:0] player_direction [1:0]; // [x,y] normalized
+    // reg signed [31:0] player_pos [1:0]; // [x,y] normalized
+    // initial begin
+    //     player_direction[0] = 32'h2d41; // cos(pi/4)
+    //     player_direction[1] = 32'h2d41; // sin(pi/4)
+    //     player_pos[0] = 32'h8000; // 2
+    //     player_pos[1] = 32'h10000; // 4
+    // end
 
-    // Matrix mul to calculate new player direction on right and left turn
-    wire signed [31:0] a_0 = 32'h3fc1; //  cos(5*)
-    wire signed [31:0] a_1 = 32'h593; //  sin(5*)
-    wire signed [31:0] a_2 = -32'h594;// -sin(5*)
-    wire signed [31:0] a_3 = 32'h3fc1; //  cos(5*)
-    wire signed [31:0] b_0 = 32'h3fc1; //  cos(-5*)
-    wire signed [31:0] b_1 = -32'h594;//  sin(-5*)
-    wire signed [31:0] b_2 = 32'h593; // -sin(-5*)
-    wire signed [31:0] b_3 = 32'h3fc1; //  cos(-5*)
+    // // Matrix mul to calculate new player direction on right and left turn
+    // wire signed [31:0] a_0 = 32'h3fc1; //  cos(5*)
+    // wire signed [31:0] a_1 = 32'h593; //  sin(5*)
+    // wire signed [31:0] a_2 = -32'h594;// -sin(5*)
+    // wire signed [31:0] a_3 = 32'h3fc1; //  cos(5*)
+    // wire signed [31:0] b_0 = 32'h3fc1; //  cos(-5*)
+    // wire signed [31:0] b_1 = -32'h594;//  sin(-5*)
+    // wire signed [31:0] b_2 = 32'h593; // -sin(-5*)
+    // wire signed [31:0] b_3 = 32'h3fc1; //  cos(-5*)
 
-    wire signed [31:0] a_0_product;
-    wire signed [31:0] a_1_product;
-    wire signed [31:0] a_2_product;
-    wire signed [31:0] a_3_product;
-    wire signed [31:0] b_0_product;
-    wire signed [31:0] b_1_product;
-    wire signed [31:0] b_2_product;
-    wire signed [31:0] b_3_product;
+    // wire signed [31:0] a_0_product;
+    // wire signed [31:0] a_1_product;
+    // wire signed [31:0] a_2_product;
+    // wire signed [31:0] a_3_product;
+    // wire signed [31:0] b_0_product;
+    // wire signed [31:0] b_1_product;
+    // wire signed [31:0] b_2_product;
+    // wire signed [31:0] b_3_product;
     
-    mulq18_14 a0_mul(player_direction[0], a_0, a_0_product);
-    mulq18_14 a1_mul(player_direction[0], a_1, a_1_product);
-    mulq18_14 a2_mul(player_direction[1], a_2, a_2_product);
-    mulq18_14 a3_mul(player_direction[1], a_3, a_3_product);
-    mulq18_14 b0_mul(player_direction[0], b_0, b_0_product);
-    mulq18_14 b1_mul(player_direction[0], b_1, b_1_product);
-    mulq18_14 b2_mul(player_direction[1], b_2, b_2_product);
-    mulq18_14 b3_mul(player_direction[1], b_3, b_3_product);
-    wire signed [31:0] new_pd_l_x =  a_0_product + a_2_product;
-    wire signed [31:0] new_pd_l_y =  a_1_product + a_3_product;
-    wire signed [31:0] new_pd_r_x =  b_0_product + b_2_product;
-    wire signed [31:0] new_pd_r_y =  b_1_product + b_3_product;
+    // mulq18_14 a0_mul(player_direction[0], a_0, a_0_product);
+    // mulq18_14 a1_mul(player_direction[0], a_1, a_1_product);
+    // mulq18_14 a2_mul(player_direction[1], a_2, a_2_product);
+    // mulq18_14 a3_mul(player_direction[1], a_3, a_3_product);
+    // mulq18_14 b0_mul(player_direction[0], b_0, b_0_product);
+    // mulq18_14 b1_mul(player_direction[0], b_1, b_1_product);
+    // mulq18_14 b2_mul(player_direction[1], b_2, b_2_product);
+    // mulq18_14 b3_mul(player_direction[1], b_3, b_3_product);
+    // wire signed [31:0] new_pd_l_x =  a_0_product + a_2_product;
+    // wire signed [31:0] new_pd_l_y =  a_1_product + a_3_product;
+    // wire signed [31:0] new_pd_r_x =  b_0_product + b_2_product;
+    // wire signed [31:0] new_pd_r_y =  b_1_product + b_3_product;
 
-    reg signed [31:0] walk_speed = 32'h666; // 0.1 
-    wire signed [31:0] delta_pos_x;
-    wire signed [31:0] delta_pos_y;
-    mulq18_14 dp_x(player_direction[0], walk_speed, delta_pos_x);
-    mulq18_14 dp_y(player_direction[1], walk_speed, delta_pos_y);
+    // reg signed [31:0] walk_speed = 32'h666; // 0.1 
+    // wire signed [31:0] delta_pos_x;
+    // wire signed [31:0] delta_pos_y;
+    // mulq18_14 dp_x(player_direction[0], walk_speed, delta_pos_x);
+    // mulq18_14 dp_y(player_direction[1], walk_speed, delta_pos_y);
 
-    reg [31:0] turn_counter = 0;
-    reg signed [31:0] new_pd_l_x_reg = 0;
-    reg signed [31:0] new_pd_l_y_reg = 0;
-    reg signed [31:0] new_pd_r_x_reg = 0;
-    reg signed [31:0] new_pd_r_y_reg = 0;
-    always @(posedge clk100) begin 
-        new_pd_l_x_reg <= new_pd_l_x;
-        new_pd_l_y_reg <= new_pd_l_y;
-        new_pd_r_x_reg <= new_pd_r_x;
-        new_pd_r_y_reg <= new_pd_r_y;
-        if(turn_counter == 10000000) begin
-            if(hw_btn[3]) begin //left turn
-                player_direction[0] <= new_pd_l_x_reg;
-                player_direction[1] <= new_pd_l_y_reg;
-            end else if (hw_btn[0]) begin //right turn
-                player_direction[0] <= new_pd_r_x_reg;
-                player_direction[1] <= new_pd_r_y_reg;
-            end else if (hw_btn[1]) begin // Forward 
-                player_pos[0] <= player_pos[0] + delta_pos_x;
-                player_pos[1] <= player_pos[1] + delta_pos_y;
-            end else if (hw_btn[2]) begin// Backward
-                player_pos[0] <= player_pos[0] - delta_pos_x;
-                player_pos[1] <= player_pos[1] - delta_pos_y;
-            end
-            turn_counter <= 0;
-        end else begin 
-            turn_counter <= turn_counter + 1;
-        end
-    end
+    // reg [31:0] turn_counter = 0;
+    // reg signed [31:0] new_pd_l_x_reg = 0;
+    // reg signed [31:0] new_pd_l_y_reg = 0;
+    // reg signed [31:0] new_pd_r_x_reg = 0;
+    // reg signed [31:0] new_pd_r_y_reg = 0;
+    // always @(posedge clk100) begin 
+    //     new_pd_l_x_reg <= new_pd_l_x;
+    //     new_pd_l_y_reg <= new_pd_l_y;
+    //     new_pd_r_x_reg <= new_pd_r_x;
+    //     new_pd_r_y_reg <= new_pd_r_y;
+    //     if(turn_counter == 10000000) begin
+    //         if(hw_btn[3]) begin //left turn
+    //             player_direction[0] <= new_pd_l_x_reg;
+    //             player_direction[1] <= new_pd_l_y_reg;
+    //         end else if (hw_btn[0]) begin //right turn
+    //             player_direction[0] <= new_pd_r_x_reg;
+    //             player_direction[1] <= new_pd_r_y_reg;
+    //         end else if (hw_btn[1]) begin // Forward 
+    //             player_pos[0] <= player_pos[0] + delta_pos_x;
+    //             player_pos[1] <= player_pos[1] + delta_pos_y;
+    //         end else if (hw_btn[2]) begin// Backward
+    //             player_pos[0] <= player_pos[0] - delta_pos_x;
+    //             player_pos[1] <= player_pos[1] - delta_pos_y;
+    //         end
+    //         turn_counter <= 0;
+    //     end else begin 
+    //         turn_counter <= turn_counter + 1;
+    //     end
+    // end
 
     ray_caster rays(
         .clk100(clk100), .fourstate(clk100_4state),
@@ -260,8 +262,15 @@ module toplevel
         .player_pos_x(x_pos),
         .player_pos_y(y_pos),
         .player_direction_x(x_dir),
-        .player_direction_y(y_dir)
+        .player_direction_y(y_dir),
+        .world_map(world_map[4095:3840])
+        
+    //     // .far_l_x(),
+    //     // .far_l_y(),
+    //     // .far_r_x(),
+    //     // .far_r_y()
     );
+
     pixel_generator pixels(
         .clk100(clk100), .fourstate(clk100_4state),
         .in_ray(raycaster_output_ray),
