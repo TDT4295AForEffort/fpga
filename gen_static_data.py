@@ -1,7 +1,7 @@
 
 
 from cmath import sin
-from math import cos, floor, pi, sin
+from math import cos, floor, pi, sin, sqrt
 
 def vec_from_angle(angle_rad):
     return [cos(angle_rad), sin(angle_rad)]
@@ -131,7 +131,40 @@ angle = (5/180)*pi
 # print(len(active))
 # print_bit_map(active)
 
-print(fixed_to_decimal("0x00024ce2"))
-print(fixed_to_decimal("0x00028010"))
-print(fixed_to_decimal("0x00004000"))
+
+# a = fixed_to_decimal("0x000032ce")
+# b = fixed_to_decimal("0x000026ec")
+# print(a) 
+# print(b)
+# print(sqrt(a**2+b**2))
+
 print(fixed_to_decimal("0x00000000"))
+print(fixed_to_decimal("0x00004000"))
+print(fixed_to_decimal("0x00002d41"))
+print(fixed_to_decimal("0x00002d41"))
+print(fixed_to_decimal("0x00002d41"))
+print(fixed_to_decimal("0xffffd2bf"))
+print(fixed_to_decimal("0x00000000"))
+print(fixed_to_decimal("0xffffc000"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

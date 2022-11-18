@@ -122,6 +122,7 @@ module spite(
         y_dir_im_reg[31 - (byte_count - 16)*8-:8] <= byte_in;
     end
     else if (byte_count < 532) begin
+        y_dir_out_reg <= y_dir_im_reg;
         map_arr_im_reg[(4095 - ((byte_count - 20)*8))-:8] <= byte_in;
     end
     else if (byte_count < 536) begin

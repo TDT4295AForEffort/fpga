@@ -68,6 +68,14 @@ module toplevel
 	wire [31:0] y_pos;
 	wire [31:0] x_dir;
 	wire [31:0] y_dir;
+	wire [31:0] far_l_x;
+	wire [31:0] far_l_y;
+	wire [31:0] far_r_x;
+	wire [31:0] far_r_y;
+    wire [31:0] en_1_x;
+    wire [31:0] en_1_y;
+    wire [31:0] en_2_x;
+    wire [31:0] en_2_y;
     wire [4095:0] world_map;
 	wire ss_fall;           // propagate ss falling edge to spite so that it can reset its byte count
 
@@ -80,15 +88,18 @@ module toplevel
     `endif
 
     //ila for debugging spi -> spite interaction, uncomment when you need it
-	// ila_0 ila (
-	//    .clk(clk100),
-	//    .probe0(world_map[4095:3840])
-	// //    .probe0(x_pos),
-	// //    .probe1(y_pos),
-	// //    .probe2(x_dir),
-	// //    .probe3(y_dir)
-	//    //.probe6(pack_size)
-    // );
+	ila_0 ila (
+	   .clk(clk100),
+	//    .probe0(x_pos),
+	//    .probe1(y_pos),
+	//    .probe2(x_dir),
+	//    .probe3(y_dir),
+	//    .probe4(far_l_x),
+	//    .probe5(far_l_y),
+	//    .probe6(far_r_x),
+	//    .probe7(far_r_y),
+       .probe0(world_map[4095-:256])
+    );
     
 
     spi_slave slav (
@@ -112,6 +123,14 @@ module toplevel
 	   .x_dir(x_dir),
 	   .y_dir(y_dir),
        .map_arr(world_map[4095:0]),
+       .x_45_left(far_l_x),
+       .y_45_left(far_l_y),
+       .x_45_right(far_r_x),
+       .y_45_right(far_r_y),
+       .en_1_x(en_1_x),
+       .en_1_y(en_1_y),
+       .en_2_x(en_2_x),
+       .en_2_y(en_2_y),
 	   .count(byte_count),   // TODO: remove unless we find a use for it
 	   .pack_size(pack_size) // TODO: same as above
 	);
@@ -263,6 +282,10 @@ module toplevel
         .player_pos_y(y_pos),
         .player_direction_x(x_dir),
         .player_direction_y(y_dir),
+        .en_1_x(en_1_x),
+        .en_1_y(en_1_y),
+        .en_2_x(en_2_x),
+        .en_2_y(en_2_y),
         .world_map(world_map[4095:3840])
         
     //     // .far_l_x(),
