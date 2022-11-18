@@ -29,6 +29,10 @@ module ray_caster(
         input wire [31:0] player_pos_y,
         input wire signed [31:0] player_direction_x,
         input wire signed [31:0] player_direction_y,
+        input wire signed [31:0] en_1_x,
+        input wire signed [31:0] en_1_y,
+        input wire signed [31:0] en_2_x,
+        input wire signed [31:0] en_2_y,
         input wire [255:0] world_map,
 
         // input wire signed [31:0] far_l_x;
@@ -74,8 +78,8 @@ module ray_caster(
         bit_map[14] = 16'b1000000000000001;
         bit_map[15] = 16'b1111111111111111;
 
-        mp[0] = 32'hd333; // 3.3
-        mp[1] = 32'hd333; // 3.3
+        mp0[0] = 32'hd333; // 3.3
+        mp0[1] = 32'hd333; // 3.3
     end
 
 
@@ -116,18 +120,29 @@ module ray_caster(
         bit_map_r15
     } = world_map;
 
-    // Monster logic
-    reg signed [31:0] mp [1:0]; // Monster position (center)
-    reg monster_col_true;
-    wire signed [31:0] rnmrp [1:0]; // R_now-Monster-Relative-Position (r_now - mp)
+    // Monster 0 logic
+    reg signed [31:0] mp0 [1:0]; // Monster position (center)
+    reg monster_col_true0;
+    wire signed [31:0] rnmrp0 [1:0]; // R_now-Monster-Relative-Position (r_now - mp)
     //wire signed [31:0] pmrp [1:0];
-    assign rnmrp[0] = r_now[0] - mp[0];
-    assign rnmrp[1] = r_now[1] - mp[1];
+    assign rnmrp0[0] = r_now[0] - mp0[0];
+    assign rnmrp0[1] = r_now[1] - mp0[1];
+    wire signed [31:0] mx_sq0;
+    wire signed [31:0] my_sq0;
+    mulq18_14 mx_sq0(rnmrp0[0], rnmrp0[0], mx_sq0);
+    mulq18_14 my_sq0(rnmrp0[1], rnmrp0[1], my_sq0);
     
-    wire signed [31:0] mx_sq;
-    wire signed [31:0] my_sq;
-    mulq18_14 mx_sq0(rnmrp[0], rnmrp[0], mx_sq);
-    mulq18_14 mx_sq1(rnmrp[1], rnmrp[1], my_sq);
+    // Monster 1 logic
+    reg signed [31:0] mp1 [1:0]; // Monster position (center)
+    reg monster_col_true1;
+    wire signed [31:0] rnmrp1 [1:0]; // R_now-Monster-Relative-Position (r_now - mp)
+    //wire signed [31:0] pmrp [1:0];
+    assign rnmrp1[0] = r_now[0] - mp1[0];
+    assign rnmrp1[1] = r_now[1] - mp1[1];
+    wire signed [31:0] mx_sq1;
+    wire signed [31:0] my_sq1;
+    mulq18_14 mx_sq1(rnmrp1[0], rnmrp1[0], mx_sq1);
+    mulq18_14 my_sq1(rnmrp1[1], rnmrp1[1], my_sq1);
 
     // Internals
     reg signed [15:0] bit_map [15:0];
@@ -192,7 +207,7 @@ module ray_caster(
     assign delta_np_floored[1] = r_now_floored[1] - r_prev_floored[1];
     wire signed [31:0] r_now_floored_x_int = r_now[0] >> 14;
     wire signed [31:0] r_now_floored_y_int = r_now[1] >> 14;
-    wire [31:0] block_address = 7 + (r_now_floored_x_int << 4) + (r_now_floored_y_int << 8); // 7 + x*16 + y*16*16
+    //wire [31:0] block_address = 7 + (r_now_floored_x_int << 4) + (r_now_floored_y_int << 8); // 7 + x*16 + y*16*16
 
 
     //ila for debugging spi -> spite interaction, uncomment when you need it
@@ -235,6 +250,12 @@ module ray_caster(
         r_d_far_right[0] <= far_r_x;
         r_d_far_right[1] <= far_r_y;
 
+        mp0[0] <= en_1_x;
+        mp0[1] <= en_1_y;
+        
+        mp1[0] <= en_2_x;
+        mp1[1] <= en_2_y;
+
         bit_map[0] <= bit_map_r00;
         bit_map[1] <= bit_map_r01;
         bit_map[2] <= bit_map_r02;
@@ -265,7 +286,7 @@ module ray_caster(
         end
 
         if (ray_cast_state == 1) begin // Check collision
-                if(bit_map[r_now_floored[1] >> 14][r_now_floored[0] >> 14] == 1 || monster_col_true) begin
+                if(bit_map[r_now_floored[1] >> 14][r_now_floored[0] >> 14] == 1 || monster_col_true0 || monster_col_true1) begin
                     ray_cast_state <= 3;
                 end else begin 
                     ray_cast_state <= 2;
@@ -281,7 +302,8 @@ module ray_caster(
             r_now_floored[1] <= (r_now[1] + r_d[1]) & 32'b11111111111111111100000000000000;
             r_prev_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
             r_prev_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
-            monster_col_true <= (mx_sq + my_sq <= 32'h400); // <= 0.25^2 
+            monster_col_true0 <= (mx_sq0 + my_sq0 <= 32'h400); // <= 0.25^2 
+            monster_col_true1 <= (mx_sq1 + my_sq1 <= 32'h400); // <= 0.25^2 
             ray_cast_state <= 1;
         end
 
@@ -306,7 +328,7 @@ module ray_caster(
             //Output
             output_ray_reg <= abs_dx < abs_dy ? (32'h1a3d*abs_dx >> 14) + (32'h3c3d*abs_dy >> 14) : (32'h1a3d*abs_dy >> 14) + (32'h3c3d*abs_dx >> 14); // Magic number = 0.41, 0.941246
             output_xpos_reg <= xpos;
-            if(monster_col_true) begin 
+            if(monster_col_true0 || monster_col_true1) begin 
                 output_hit_type_reg <= 1;
             end else begin 
                 output_hit_type_reg <= 0;
