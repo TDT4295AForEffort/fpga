@@ -124,7 +124,6 @@ module ray_caster(
     reg signed [31:0] mp0 [1:0]; // Monster position (center)
     reg monster_col_true0;
     wire signed [31:0] rnmrp0 [1:0]; // R_now-Monster-Relative-Position (r_now - mp)
-    //wire signed [31:0] pmrp [1:0];
     assign rnmrp0[0] = r_now[0] - mp0[0];
     assign rnmrp0[1] = r_now[1] - mp0[1];
     wire signed [31:0] mx_sq0;
@@ -136,7 +135,6 @@ module ray_caster(
     reg signed [31:0] mp1 [1:0]; // Monster position (center)
     reg monster_col_true1;
     wire signed [31:0] rnmrp1 [1:0]; // R_now-Monster-Relative-Position (r_now - mp)
-    //wire signed [31:0] pmrp [1:0];
     assign rnmrp1[0] = r_now[0] - mp1[0];
     assign rnmrp1[1] = r_now[1] - mp1[1];
     wire signed [31:0] mx_sq1;
@@ -207,38 +205,7 @@ module ray_caster(
     assign delta_np_floored[1] = r_now_floored[1] - r_prev_floored[1];
     wire signed [31:0] r_now_floored_x_int = r_now[0] >> 14;
     wire signed [31:0] r_now_floored_y_int = r_now[1] >> 14;
-    //wire [31:0] block_address = 7 + (r_now_floored_x_int << 4) + (r_now_floored_y_int << 8); // 7 + x*16 + y*16*16
 
-
-    //ila for debugging spi -> spite interaction, uncomment when you need it
-	// ila_0 ila (
-	//    .clk(clk100),
-	//    .probe0(
-    //     {
-    //         bit_map[0],
-    //         bit_map[1],
-    //         bit_map[2],
-    //         bit_map[3],
-    //         bit_map[4],
-    //         bit_map[5],
-    //         bit_map[6],
-    //         bit_map[7],
-    //         bit_map[8],
-    //         bit_map[9],
-    //         bit_map[10],
-    //         bit_map[11],
-    //         bit_map[12],
-    //         bit_map[13],
-    //         bit_map[14],
-    //         bit_map[15]
-    //     }
-    //    )
-	// //    .probe0(x_pos),
-	// //    .probe1(y_pos),
-	// //    .probe2(x_dir),
-	// //    .probe3(y_dir)
-	//    //.probe6(pack_size)
-    // );
     
     always @(posedge clk100) begin 
 
@@ -302,8 +269,8 @@ module ray_caster(
             r_now_floored[1] <= (r_now[1] + r_d[1]) & 32'b11111111111111111100000000000000;
             r_prev_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
             r_prev_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
-            monster_col_true0 <= (mx_sq0 + my_sq0 <= 32'h400); // <= 0.25^2 
-            monster_col_true1 <= (mx_sq1 + my_sq1 <= 32'h400); // <= 0.25^2 
+            monster_col_true0 <= (mx_sq0 + my_sq0 <= 32'h400); // <= 0.25^2 monster width
+            monster_col_true1 <= (mx_sq1 + my_sq1 <= 32'h400); // <= 0.25^2 monster width
             ray_cast_state <= 1;
         end
 
@@ -322,7 +289,7 @@ module ray_caster(
             abs_dy <= player_pos[1] - r_now[1] >= 0 ? player_pos[1] - r_now[1] : r_now[1] - player_pos[1];
             ray_cast_state <= 4;
         end
-        
+
 
         if (ray_cast_state == 4) begin // Calculate distance
             //Output

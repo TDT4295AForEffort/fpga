@@ -73,9 +73,9 @@ module pixel_generator(
 
         // make one pixel per 4 cycles, because that's how often you can write to a single slot.
         if (fourstate == 0 && pix_gen_busy == 1) begin
-            if(ypos > (240 + bar_border_from_center[31:15])) begin // If on floor
+            if((ypos > (240 + bar_border_from_center[31:15])) && (bar_border_from_center[31:15] <= 240)) begin // If on floor
                 data_reg <= 16'b11001_111111_11001;
-            end else if(ypos < (240 - bar_border_from_center[31:15])) begin // If on ceiling
+            end else if((ypos < (240 - bar_border_from_center[31:15])) && (bar_border_from_center[31:15] <= 240)) begin // If on ceiling
                 data_reg <= 16'b11111_111111_11001;
             end else begin
                 if(hit_type_reg == 0) begin  
