@@ -138,14 +138,17 @@ angle = (5/180)*pi
 # print(b)
 # print(sqrt(a**2+b**2))
 
-af = "0x0035147a"
-ad = fixed_to_decimal(af)
-bd = ad*3
-bf = convert_to_fixed_point(bd)
-print(af)
-print(ad)
-print(bd)
-print(bf)
+# af = "0x0035147a"
+# ad = fixed_to_decimal(af)
+# bd = ad*3
+# bf = convert_to_fixed_point(bd)
+# print(af)
+# print(ad)
+# print(bd)
+# print(bf)
+
+# print("1 is: ")
+# print(convert_to_fixed_point(1))
 
 # print(fixed_to_decimal("0x00004000"))
 # print(fixed_to_decimal("0x00002d41"))
@@ -155,7 +158,19 @@ print(bf)
 # print(fixed_to_decimal("0x00000000"))
 # print(fixed_to_decimal("0xffffc000"))
 
+# tpb = fixed_to_decimal("-0xfff83556")
+# val = (24 - tpb)/(2*fixed_to_decimal("0x0021e555"))
+# print(tpb)
+# print(val)
 
+# old = "0x35147a"
+# print("new: " + convert_to_fixed_point(3*fixed_to_decimal(old)))
+
+print(fixed_to_decimal("0x0032189a"))
+print(fixed_to_decimal("0x00370c4d"))
+print(fixed_to_decimal("0x003c0000"))
+print(fixed_to_decimal("0x0040f3b3"))
+print(fixed_to_decimal("0x0045e766"))
 
 
 
