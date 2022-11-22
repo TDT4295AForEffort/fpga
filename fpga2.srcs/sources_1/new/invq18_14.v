@@ -26,7 +26,7 @@ module invq18_14(
         output wire signed [31:0] inv
     );
     // delay: 3 cycles.
-    // (cycle 0: input, cycle 1: first pass, cycle 2: third pass, cycle 3: output
+    // (cycle 0: input, cycle 1: first pass, cycle 2: fourth pass, cycle 3: output
     // inv = 1/a
     // 1/a = 1/n * n/a = 1/n * 1/(a/n)
     // select n so a/n € [0.5,1]
@@ -85,7 +85,7 @@ module invq18_14(
     reg first_isneg = 0;
     reg [4:0] first_shift = 0;
 
-    always @(posedge clk) begin
+    always @(negedge clk) begin
         // 2.82352941 - 1.88235284 b'
         first_guess = c_2d82352941 - firstmultres[63:29];
         first_isneg = isneg;
@@ -100,47 +100,61 @@ module invq18_14(
     wire [63:0] second_dx = first_guess * (c_1d0 - second_xy[63:29]);
     reg [6:0] second_shift = 0;
 
-    always @(negedge clk) begin
+    always @(posedge clk) begin
         second_guess = first_guess + second_dx[63:29];
         second_isneg = first_isneg;
         second_x = first_x;
         second_shift = first_shift;
     end
 
-    reg [31:0] third_guess = 0;
-    reg [31:0] third_x = 0;
-    reg third_isneg = 0;
-    wire [63:0] third_xy = second_x * second_guess;
-    wire [63:0] third_dx = second_guess * (c_1d0 - third_xy[63:29]);
-    reg [6:0] third_shift = 0;
+    reg [31:0] fourth_guess = 0;
+    reg [31:0] fourth_x = 0;
+    reg fourth_isneg = 0;
+    wire [63:0] fourth_xy = second_x * second_guess;
+    wire [63:0] fourth_dx = second_guess * (c_1d0 - fourth_xy[63:29]);
+    reg [6:0] fourth_shift = 0;
 
-    always @(posedge clk) begin
-        third_guess = second_guess + third_dx[63:29];
-        third_isneg = second_isneg;
-        third_x = second_x;
-        third_shift = second_shift;
+    always @(negedge clk) begin
+        fourth_guess = second_guess + fourth_dx[63:29];
+        fourth_isneg = second_isneg;
+        fourth_x = second_x;
+        fourth_shift = second_shift;
     end
 
 
     reg [31:0] fourth_guess = 0;
     reg [31:0] fourth_x = 0;
     reg fourth_isneg = 0;
-    wire [63:0] fourth_xy = third_x * third_guess;
-    wire [63:0] fourth_dx = third_guess * (c_1d0 - fourth_xy[63:29]);
+    wire [63:0] fourth_xy = fourth_x * fourth_guess;
+    wire [63:0] fourth_dx = fourth_guess * (c_1d0 - fourth_xy[63:29]);
     reg [6:0] fourth_shift = 0;
 
+    always @(posedge clk) begin
+        fourth_guess = fourth_guess + fourth_dx[63:29];
+        fourth_isneg = fourth_isneg;
+        fourth_x = fourth_x;
+        fourth_shift = fourth_shift;
+    end
+
+    reg [31:0] fifth_guess = 0;
+    reg [31:0] fifth_x = 0;
+    reg fifth_isneg = 0;
+    wire [63:0] fifth_xy = fourth_x * fourth_guess;
+    wire [63:0] fifth_dx = fourth_guess * (c_1d0 - fifth_xy[63:29]);
+    reg [6:0] fifth_shift = 0;
+
     always @(negedge clk) begin
-        fourth_guess = third_guess + fourth_dx[63:29];
-        fourth_isneg = third_isneg;
-        fourth_x = third_x;
-        fourth_shift = third_shift;
+        fifth_guess = fourth_guess + fifth_dx[63:29];
+        fifth_isneg = fourth_isneg;
+        fifth_x = fourth_x;
+        fifth_shift = fourth_shift;
     end
 
     // this is now Qx.44
     reg signed [63:0] res = 0;
     always @(posedge clk) begin
-        res = fourth_guess << fourth_shift;
+        res = fifth_guess << fifth_shift;
     end
-    assign inv = fourth_isneg ? -res[62:30] : res[62:30];
+    assign inv = fifth_isneg ? -res[62:30] : res[62:30];
 
 endmodule
