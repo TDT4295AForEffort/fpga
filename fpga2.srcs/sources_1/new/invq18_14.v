@@ -107,33 +107,33 @@ module invq18_14(
         second_shift = first_shift;
     end
 
-    reg [31:0] fourth_guess = 0;
-    reg [31:0] fourth_x = 0;
-    reg fourth_isneg = 0;
-    wire [63:0] fourth_xy = second_x * second_guess;
-    wire [63:0] fourth_dx = second_guess * (c_1d0 - fourth_xy[63:29]);
-    reg [6:0] fourth_shift = 0;
+    reg [31:0] third_guess = 0;
+    reg [31:0] third_x = 0;
+    reg third_isneg = 0;
+    wire [63:0] third_xy = second_x * second_guess;
+    wire [63:0] third_dx = second_guess * (c_1d0 - third_xy[63:29]);
+    reg [6:0] third_shift = 0;
 
     always @(negedge clk) begin
-        fourth_guess = second_guess + fourth_dx[63:29];
-        fourth_isneg = second_isneg;
-        fourth_x = second_x;
-        fourth_shift = second_shift;
+        third_guess = second_guess + third_dx[63:29];
+        third_isneg = second_isneg;
+        third_x = second_x;
+        third_shift = second_shift;
     end
 
 
     reg [31:0] fourth_guess = 0;
     reg [31:0] fourth_x = 0;
     reg fourth_isneg = 0;
-    wire [63:0] fourth_xy = fourth_x * fourth_guess;
-    wire [63:0] fourth_dx = fourth_guess * (c_1d0 - fourth_xy[63:29]);
+    wire [63:0] fourth_xy = third_x * third_guess;
+    wire [63:0] fourth_dx = third_guess * (c_1d0 - fourth_xy[63:29]);
     reg [6:0] fourth_shift = 0;
 
     always @(posedge clk) begin
-        fourth_guess = fourth_guess + fourth_dx[63:29];
-        fourth_isneg = fourth_isneg;
-        fourth_x = fourth_x;
-        fourth_shift = fourth_shift;
+        fourth_guess = third_guess + fourth_dx[63:29];
+        fourth_isneg = third_isneg;
+        fourth_x = third_x;
+        fourth_shift = third_shift;
     end
 
     reg [31:0] fifth_guess = 0;
