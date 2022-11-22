@@ -41,14 +41,12 @@ module toplevel
 		output wire [4:0] hw_vga_out_blue,
 
 		//inout wire [7:0] hw_gpio,
-		output wire [3:0] hw_led,
-		output wire [7:0] hw_rgb,
-
-		input wire [3:0] hw_btn // for demo, todo remove?
+		output wire [3:0] hw_led
+//        output wire [7:0] hw_rgb
 	);
 
     // Are you compiling for devboard or for pcb 
-    `define ISDEV
+//    `define ISDEV
 	// possible universal reset signal for future
 	wire reset = 0;
 	// 100mhz clock, bc things are written with this assumption and it should be explicit
@@ -60,7 +58,9 @@ module toplevel
     `endif
 
 	assign hw_led[2] = clk100;
-	
+	assign hw_led[1] = hw_clk;
+	assign hw_led[0] = 1;
+
     // spi wires
 	wire spi_byte_ready;    // let's spite know that we've received a byte
 	wire [7:0] spi_out;
@@ -82,10 +82,6 @@ module toplevel
     // TODO: remove. these two are just for debugging/verifying that we receive the correct data
 	wire [13:0] byte_count;
 	wire [15:0] pack_size;
-
-    `ifdef ISDEV
-	    assign hw_rgb = spi_out; // flash rgb LEDs with spi output
-    `endif
 
     //ila for debugging spi -> spite interaction, uncomment when you need it
 	// ila_0 ila (
@@ -216,6 +212,9 @@ module toplevel
     // stand-in for sram, block ram ip module, with one port set to 16bit rw access, 320*240 = 76800 depth
     // results in 2 cycle delay
     // todo implement external sram access
-    blk_mem_gen_0 ram(.clka(clk100), .addra(ram_addr[16:0]), .douta(ram_data_out), .dina(ram_data_in), .wea(ram_write));
-
+    `ifdef ISDEV
+        blk_mem_gen_0 ram(.clka(clk100), .addra(ram_addr), .douta(ram_data_out), .dina(ram_data_in), .wea(ram_write));
+    `else
+        blk_mem_gen_pcb ram(.clka(clk100), .addra(ram_addr), .douta(ram_data_out), .dina(ram_data_in), .wea(ram_write));
+    `endif
 endmodule

@@ -27,10 +27,10 @@ set_property -dict { PACKAGE_PIN D13    IOSTANDARD LVCMOS33 } [get_ports { hw_le
 set_property -dict { PACKAGE_PIN C13    IOSTANDARD LVCMOS33 } [get_ports { hw_led[3] }];
 
 # debug GPIOs mapped to be the button inputs from devboard demo
-set_property -dict { PACKAGE_PIN C4    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[0] }];
-set_property -dict { PACKAGE_PIN D6    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[1] }];
-set_property -dict { PACKAGE_PIN C3    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[2] }];
-set_property -dict { PACKAGE_PIN D4    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[3] }];
+#set_property -dict { PACKAGE_PIN C4    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[0] }];
+#set_property -dict { PACKAGE_PIN D6    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[1] }];
+#set_property -dict { PACKAGE_PIN C3    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[2] }];
+#set_property -dict { PACKAGE_PIN D4    IOSTANDARD LVCMOS33 } [get_ports { hw_btn[3] }];
 
 
 # debug GPIOs

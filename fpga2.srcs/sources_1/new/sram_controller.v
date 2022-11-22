@@ -55,17 +55,31 @@ module sram_controller(
     reg [9:0] pixwrite_x_half = 0;
     reg [9:0] pixwrite_y_half = 0;
 
-    wire [19:0] addr_pix_read = pixread_y_half * 320 + pixread_x_half;
-    wire [19:0] addr_pix_write = pixwrite_y_half * 320 + pixwrite_x_half;
+    `ifdef ISDEV
+        wire [19:0] addr_pix_read = pixread_y_half * 320 + pixread_x_half;
+        wire [19:0] addr_pix_write = pixwrite_y_half * 320 + pixwrite_x_half;
 
+        always @(posedge clk100) begin
+            pixread_x_half = pixread_x/2;
+            pixread_y_half = pixread_y/2;
 
-    always @(posedge clk100) begin
-        pixread_x_half = pixread_x/2;
-        pixread_y_half = pixread_y/2;
+            pixwrite_x_half = pixwrite_x[0]||pixwrite_y[0] ? 320 : {1'b0, pixwrite_x[9:1]};
+            pixwrite_y_half = pixwrite_x[0]||pixwrite_y[0] ? 239 : {1'b0, pixwrite_y[9:1]};
+        end
+    `else
+        wire [19:0] addr_pix_read = pixread_y_half * 640 + pixread_x_half;
+        wire [19:0] addr_pix_write = pixwrite_y_half * 640 + pixwrite_x_half;
 
-        pixwrite_x_half = pixwrite_x[0]||pixwrite_y[0] ? 320 : {1'b0, pixwrite_x[9:1]};
-        pixwrite_y_half = pixwrite_x[0]||pixwrite_y[0] ? 239 : {1'b0, pixwrite_y[9:1]};
-    end
+        wire pixwrite_y_skip = pixwrite_y[2:0] == 0;
+        always @(posedge clk100) begin
+            pixread_x_half = pixread_x;
+            pixread_y_half = (pixread_y*7)/8;
+    //        pixread_y_half = pixread_y/2;
+
+            pixwrite_x_half = pixwrite_y_skip ? 640 : pixwrite_x;
+            pixwrite_y_half = pixwrite_y_skip ? 419 : (pixwrite_y * 7)/8;
+        end
+    `endif
     
     
     // which of 4 states the read address should be read during
