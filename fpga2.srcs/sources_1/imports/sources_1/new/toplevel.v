@@ -88,18 +88,10 @@ module toplevel
     `endif
 
     //ila for debugging spi -> spite interaction, uncomment when you need it
-	ila_0 ila (
-	   .clk(clk100),
-	//    .probe0(x_pos),
-	//    .probe1(y_pos),
-	//    .probe2(x_dir),
-	//    .probe3(y_dir),
-	//    .probe4(far_l_x),
-	//    .probe5(far_l_y),
-	//    .probe6(far_r_x),
-	//    .probe7(far_r_y),
-       .probe0(world_map[4095-:256])
-    );
+	// ila_0 ila (
+	//    .clk(clk100),
+    //    .probe0(world_map[4095-:256])
+    // );
     
 
     spi_slave slav (

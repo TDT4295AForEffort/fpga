@@ -130,7 +130,7 @@ module ray_caster(
     wire signed [31:0] my_sq0;
     mulq18_14 mx_sq0(rnmrp0[0], rnmrp0[0], mx_sq0);
     mulq18_14 my_sq0(rnmrp0[1], rnmrp0[1], my_sq0);
-    
+
     // Monster 1 logic
     reg signed [31:0] mp1 [1:0]; // Monster position (center)
     reg monster_col_true1;
@@ -269,21 +269,27 @@ module ray_caster(
             r_now_floored[1] <= (r_now[1] + r_d[1]) & 32'b11111111111111111100000000000000;
             r_prev_floored[0] <= r_now[0] & 32'b11111111111111111100000000000000;
             r_prev_floored[1] <= r_now[1] & 32'b11111111111111111100000000000000;
-            monster_col_true0 <= (mx_sq0 + my_sq0 <= 32'h400); // <= 0.25^2 monster width
-            monster_col_true1 <= (mx_sq1 + my_sq1 <= 32'h400); // <= 0.25^2 monster width
+            monster_col_true0 <= (mx_sq0 + my_sq0 <= 32'h1000); // <= 0.5^2 monster width
+            monster_col_true1 <= (mx_sq1 + my_sq1 <= 32'h1000); // <= 0.5^2 monster width
             ray_cast_state <= 1;
         end
 
         if (ray_cast_state == 3) begin 
             // Texture index logic
-            if(delta_np_floored[0] == (1 << 14) && delta_np_floored[1] == (0 << 14)) begin // From left to right
-                texture_index_reg <= (1 << 14) - r_now_corner[1];
-            end else if (delta_np_floored[0] == (0 << 14) && delta_np_floored[1] == -(1 << 14)) begin // From top to bot
-                texture_index_reg <= (1 << 14) - r_now_corner[0];
-            end else if (delta_np_floored[0] == -(1 << 14) && delta_np_floored[1] == (0 << 14)) begin // Right left
-                texture_index_reg <= r_now_corner[1];
-            end else if (delta_np_floored[0] == (0 << 14) && delta_np_floored[1] == (1 << 14)) begin // Bot up
-                texture_index_reg <= r_now_corner[0];
+            if(monster_col_true0) begin
+                texture_index_reg <= rnmrp0[0] + 32'h4000;
+            end else if (monster_col_true1) begin 
+                texture_index_reg <= rnmrp1[0] + 32'h4000;
+            end else begin // Block coll
+                if(delta_np_floored[0] == (1 << 14) && delta_np_floored[1] == (0 << 14)) begin // From left to right
+                    texture_index_reg <= (1 << 14) - r_now_corner[1];
+                end else if (delta_np_floored[0] == (0 << 14) && delta_np_floored[1] == -(1 << 14)) begin // From top to bot
+                    texture_index_reg <= (1 << 14) - r_now_corner[0];
+                end else if (delta_np_floored[0] == -(1 << 14) && delta_np_floored[1] == (0 << 14)) begin // Right left
+                    texture_index_reg <= r_now_corner[1];
+                end else if (delta_np_floored[0] == (0 << 14) && delta_np_floored[1] == (1 << 14)) begin // Bot up
+                    texture_index_reg <= r_now_corner[0];
+                end
             end
             abs_dx <= player_pos[0] - r_now[0] >= 0 ? player_pos[0] - r_now[0] : r_now[0] - player_pos[0];
             abs_dy <= player_pos[1] - r_now[1] >= 0 ? player_pos[1] - r_now[1] : r_now[1] - player_pos[1];
