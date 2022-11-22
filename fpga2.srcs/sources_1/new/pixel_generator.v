@@ -79,7 +79,7 @@ module pixel_generator(
     assign send_new_ray = send_new_ray_reg;
 
     wire [31:0] bar_border_from_center_wire;
-    divq18_14 div_bar_border_from_center(clk100, 32'h9f3d6e, in_ray_reg, bar_border_from_center_wire);
+    divq18_14 div_bar_border_from_center(clk100, 32'h35147a, in_ray_reg, bar_border_from_center_wire);
     wire signed [31:0] border0 = 240 - (bar_border_from_center >> 14);
     wire signed [31:0] border1_16 = 240 - (bar_border_from_center >> 14) + ((bar_border_from_center >> 14) >> 3);
     wire signed [31:0] border2_16 = 240 - (bar_border_from_center >> 14) + ((bar_border_from_center >> 14) >> 2);
@@ -166,15 +166,15 @@ module pixel_generator(
         // make one pixel per 4 cycles, because that's how often you can write to a single slot.
         if (fourstate == 0 && pix_gen_busy == 1) begin
             if((ypos > border1) && (border1 <= 480)) begin // If on floor
-                data_reg <= 16'b00110_011001_00000;
+                data_reg <= 16'b01001_011100_00111;
             end else if((ypos < border0) && border0 >= 0) begin // If on ceiling
-                data_reg <= 16'b11111_111111_10101;
+                data_reg <= 16'b11011_101010_10111;
             end else begin
                 if(hit_type_reg == 0) begin  // block hit
                     if(block_face[ytex_block][texture_index_reg[13:11]] == 0) begin 
-                        data_reg <= 16'b00000_010011_10011; // dark
+                        data_reg <= 16'b00110_011110_10110; // dark
                     end else begin 
-                        data_reg <= 16'b00000_011000_10010; // light
+                        data_reg <= 16'b00100_010001_01100; // light
                     end
                     //data_reg <= {texture_index_reg[13:9], 6'd127 - in_ray_reg[17:12], 5'b0};
                 end else if(hit_type_reg == 1) begin // Monster
