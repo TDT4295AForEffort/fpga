@@ -42,51 +42,83 @@ module sram_controller(
         input wire pixwrite_enable,
 
         // connection to actual ram module
-        output wire [19:0] sram_addr,
+        output wire [19:0] sram_addr_read,
+        output wire [19:0] sram_addr_write,
+        output wire [19:0] sram_full_addr, // todo doesn't work right??
         input wire [15:0] sram_data_out,
         output wire [15:0] sram_data_in,
         output wire sram_write
     );
     
     // temporary wrap mapping for the 25's limited bram
-    reg [9:0] pixread_x_half = 0;
-    reg [9:0] pixread_y_half = 0;
+    wire [9:0] pixread_x_half = pixread_x/2;
+    wire [9:0] pixread_y_half = pixread_y/2;
+    wire [9:0] pixwrite_x_half = pixwrite_x[0]||pixwrite_y[0] ? 320 : {1'b0, pixwrite_x[9:1]};
+    wire [9:0] pixwrite_y_half = pixwrite_x[0]||pixwrite_y[0] ? 239 : {1'b0, pixwrite_y[9:1]};
 
-    reg [9:0] pixwrite_x_half = 0;
-    reg [9:0] pixwrite_y_half = 0;
+    reg [9:0] pixread_x_full = 0;
+    reg [9:0] pixread_y_full = 0;
+    reg [9:0] pixwrite_x_full = 0;
+    reg [9:0] pixwrite_y_full = 0;
 
-    wire [19:0] addr_pix_read = pixread_y_half * 320 + pixread_x_half;
-    wire [19:0] addr_pix_write = pixwrite_y_half * 320 + pixwrite_x_half;
+    reg [19:0] addr_pix_read;
+    reg [19:0] addr_pix_write;
+
+    wire [19:0] full_addr_pix_read = pixread_y_full * 640 + pixread_x_full;
+    wire [19:0] full_addr_pix_write = pixwrite_y_full * 640 + pixwrite_x_full;
 
 
     always @(posedge clk100) begin
-        pixread_x_half = pixread_x/2;
-        pixread_y_half = pixread_y/2;
+    //        pixread_x_half = pixread_x/2;
+    //        pixread_y_half = pixread_y/2;
 
-        pixwrite_x_half = pixwrite_x[0]||pixwrite_y[0] ? 320 : {1'b0, pixwrite_x[9:1]};
-        pixwrite_y_half = pixwrite_x[0]||pixwrite_y[0] ? 239 : {1'b0, pixwrite_y[9:1]};
+        addr_pix_read = pixread_y_half * 320 + pixread_x_half;
+        addr_pix_write = pixwrite_y_half * 320 + pixwrite_x_half;
+        pixread_x_full = pixread_x;
+        pixread_y_full = pixread_y;
+
+//        pixwrite_x_half = pixwrite_x[0]||pixwrite_y[0] ? 320 : {1'b0, pixwrite_x[9:1]};
+//        pixwrite_y_half = pixwrite_x[0]||pixwrite_y[0] ? 239 : {1'b0, pixwrite_y[9:1]};
+
+        pixwrite_x_full = pixwrite_x;
+        pixwrite_y_full = pixwrite_y;
     end
-    
-    
+
+    reg [27:0] count = 0;
+    always @(posedge clk100) begin
+        count = count + 1;
+    end
+    // which of 4 states the read result comes back for
+    localparam pix_read_return_state = 3;
+
+    // which of 4 states the write address should be read during
+    localparam pix_write_addr_state = 0;
+    localparam pix_write_addr_state2 = 1;
     // which of 4 states the read address should be read during
     localparam pix_read_addr_state = 2;
-    // which of 4 states the read result comes back for
-    localparam pix_read_return_state = 0;
-    
-    localparam pix_write_addr_state = 0;
+    localparam pix_read_addr_state2 = 3;
 
     // address select, which "port" controls the address this cycle.
-    assign sram_addr = 
-        (clk100_4state == pix_read_addr_state ? addr_pix_read :
-        (clk100_4state == pix_write_addr_state ? addr_pix_write : 0)
-    );
+    assign sram_full_addr =
+        (clk100_4state == pix_write_addr_state ? full_addr_pix_write :
+        (clk100_4state == pix_read_addr_state ? full_addr_pix_read :
+        (full_addr_pix_read)
+        ));
 
+    assign sram_addr_read = addr_pix_read; //count > (1<<27) ? addr_pix_read : addr_pix_write;// test
+    assign sram_addr_write = addr_pix_write; //count > (1<<27) ? addr_pix_read : addr_pix_write;// test
+       // (clk100_4state == pix_write_addr_state ? addr_pix_write :
+       // (clk100_4state == pix_write_addr_state2 ? addr_pix_write :
+       // (clk100_4state == pix_read_addr_state ? addr_pix_read :
+       // (clk100_4state == pix_read_addr_state2 ? addr_pix_read :
+       // (addr_pix_read)
+       // ))));
     // read data is currently always pixel read, it is valid after a delay
     assign pixread_data = sram_data_out;
     assign pixread_valid = clk100_4state == pix_read_return_state;
 
     // write if it's the pixel write port's turn, and it is writing
-    assign sram_write = (clk100_4state == pix_write_addr_state) && pixwrite_enable;
+    assign sram_write = pixwrite_enable;
     assign sram_data_in = pixwrite_data;
 
 endmodule : sram_controller

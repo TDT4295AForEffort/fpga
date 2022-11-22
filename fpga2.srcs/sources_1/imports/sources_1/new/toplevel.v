@@ -40,6 +40,14 @@ module toplevel
 		output wire [5:0] hw_vga_out_green,
 		output wire [4:0] hw_vga_out_blue,
 
+        output wire [19:0] hw_sram_addr,
+        output wire hw_sram_cWE, // active-low
+        output wire hw_sram_cCE, // active-low
+        output wire hw_sram_cOE, // active-low
+        output wire hw_sram_cLB, // active-low
+        output wire hw_sram_cUB, // active-low
+        inout wire [15:0] hw_sram_data,
+
 		//inout wire [7:0] hw_gpio,
 		output wire [3:0] hw_led,
 
@@ -47,16 +55,16 @@ module toplevel
 	);
 
     // Are you compiling for devboard or for pcb 
-    `define ISDEV
+    //`define ISDEV
 	// possible universal reset signal for future
 	wire reset = 0;
 	// 100mhz clock, bc things are written with this assumption and it should be explicit
 	wire clk100;
-    `ifdef ISDEV
-        assign clk100 = hw_clk;
-    `else 
+//    `ifdef ISDEV
+//        assign clk100 = hw_clk;
+//    `else
         clk_wiz_0 clkwiz(.clk_in1(hw_clk), .clk_out1(clk100));
-    `endif
+//    `endif
 
 	
     assign hw_led[0] = 0;
@@ -241,23 +249,68 @@ module toplevel
     assign hw_vga_out_blue = video_on ? pixel[15:11] : 0;
 
     // connections from ram controller to ram
-    wire [19:0] ram_addr;
+    wire [19:0] ram_addr_r;
+    wire [19:0] ram_addr_w;
+    wire [19:0] ram_full_addr;
     wire [15:0] ram_data_out;
     wire [15:0] ram_data_in;
     wire ram_write;
-    
+
     // controller for accessing ram
     // feel free to assign a wire to pixwrite_enable and connect it to your raycaster or whatever,
     // if you end up having dead time where you wait for frame end or smth.
     sram_controller sram_controller(.clk100(clk100), .clk100_4state(clk100_4state), 
-                                    .sram_addr(ram_addr), .sram_data_in(ram_data_in), .sram_data_out(ram_data_out), .sram_write(ram_write), 
+                                    .sram_addr_read(ram_addr_r), .sram_addr_write(ram_addr_w), .sram_data_in(ram_data_in), .sram_data_out(ram_data_out), .sram_write(ram_write),
                                     .pixread_x(pixread_x), .pixread_y(y), .pixread_data(pixelread), .pixread_valid(pixel_read_valid),
                                     .pixwrite_x(pixwrite_x), .pixwrite_y(pixwrite_y), .pixwrite_data(pixwrite_data), .pixwrite_enable(pixwrite_enable)
                                     );
 
     // stand-in for sram, block ram ip module, with one port set to 16bit rw access, 320*240 = 76800 depth
     // results in 2 cycle delay
-    // todo implement external sram access
-    blk_mem_gen_0 ram(.clka(clk100), .addra(ram_addr[16:0]), .douta(ram_data_out), .dina(ram_data_in), .wea(ram_write));
+//    blk_mem_gen_0 ram(.clka(clk100), .addra(ram_addr[16:0]), .douta(ram_data_out), .dina(ram_data_in), .wea(ram_write));
+    wire sramreset = 0;
+    wire [15:0] sram_data_out;
+    // todo replace sram_data_out with ram_data_out and remove blk mem gen to actually use ram
+    // todo ram access is still wrong somehow.
+//    sram_manager sram(
+//            clk100,
+//            clk100_4state,
+//            sramreset,
+//
+//            hw_sram_addr,
+//            hw_sram_cWE, // active-low
+//            hw_sram_cCE, // active-low
+//            hw_sram_cOE, // active-low
+//            hw_sram_cLB, // active-low
+//            hw_sram_cUB, // active-low
+//            hw_sram_data,
+//
+//            ram_write,
+//            ram_addr,
+//            ram_data_in,
+//            ram_data_out
+//    );
+
+    sram_test tester(
+        clk100,
+        clk100_4state,
+        sramreset,
+
+        hw_sram_addr,
+        hw_sram_cWE, // active-low
+        hw_sram_cCE, // active-low
+        hw_sram_cOE, // active-low
+        hw_sram_cLB, // active-low
+        hw_sram_cUB, // active-low
+        hw_sram_data,
+
+        ram_write,
+        ram_addr_r,
+        ram_addr_w,
+        ram_data_in,
+        ram_data_out
+    );
+
+    ila_0 ila(clk100, ram_data_in, ram_data_out, hw_sram_addr, clk100_4state, hw_sram_cWE, hw_sram_cCE, hw_sram_cUB, ram_addr_r, ram_addr_w);
 
 endmodule : toplevel
