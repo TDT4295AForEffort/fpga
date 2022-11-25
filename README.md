@@ -9,4 +9,6 @@ To run this on an Arty A7-35T devboard, uncomment the line that defines ISDEV in
 To run this on our final PCB, featuring an Arty A7-100T ( xc7a100t ftg256 ), keep that line commented out, and use the run synth_pcb.
 To run this on some other setup, you need to make your own constraint file to map all these pins.
 
+If something about the project file isn't working, you can try using the project export archive fpga2.xpr.zip instead
+
 TODO maybe insert some photos of raycraft here? could be fun to make this repo more useful/fun for others to see
